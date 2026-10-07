@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/navigation';
+import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { ShoppingBag, UtensilsCrossed, PhoneCall, ShieldCheck } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatters';
@@ -34,13 +34,13 @@ export default function PublicLayout({
               <PhoneCall className="w-3.5 h-3.5 text-emerald-400" />
               WhatsApp Local
             </a>
-            <a
+            <Link
               href="/kds"
               className="flex items-center gap-1 text-orange-400 hover:text-orange-300 font-medium transition"
             >
               <ShieldCheck className="w-3.5 h-3.5" />
               Acceso Admin / KDS
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -48,7 +48,7 @@ export default function PublicLayout({
       {/* Header Principal */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group">
             <div className="w-10 h-10 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-md shadow-orange-500/20 group-hover:scale-105 transition">
               <UtensilsCrossed className="w-5 h-5" />
             </div>
@@ -56,10 +56,10 @@ export default function PublicLayout({
               <h1 className="font-bold text-lg text-slate-900 leading-tight">{restaurantName}</h1>
               <p className="text-xs text-slate-500">Fast Food Online • Sin Registro</p>
             </div>
-          </a>
+          </Link>
 
           {/* Carrito en Header */}
-          <a
+          <Link
             href="/checkout"
             className="flex items-center gap-2.5 bg-orange-50 hover:bg-orange-100 text-orange-700 px-3.5 py-2 rounded-xl font-medium text-sm transition border border-orange-200"
           >
@@ -74,7 +74,7 @@ export default function PublicLayout({
             <span className="hidden sm:inline font-semibold">
               {totalItems > 0 ? formatCurrency(subtotal) : 'Mi Carrito'}
             </span>
-          </a>
+          </Link>
         </div>
       </header>
 

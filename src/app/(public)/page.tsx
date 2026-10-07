@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { Product, Category } from '@/types';
 import { formatCurrency } from '@/lib/utils/formatters';
@@ -309,7 +310,7 @@ export default function MenuCatalogPage() {
       {/* Barra Flotante Inferior de Checkout (Mobile/Desktop) */}
       {totalItems > 0 && (
         <div className="fixed bottom-4 left-4 right-4 max-w-lg mx-auto z-40 animate-in slide-in-from-bottom-5">
-          <a
+          <Link
             href="/checkout"
             className="flex items-center justify-between bg-slate-900 text-white p-4 rounded-2xl shadow-2xl hover:bg-black transition border border-slate-800"
           >
@@ -327,7 +328,7 @@ export default function MenuCatalogPage() {
               <ShoppingBag className="w-4 h-4" />
               Finalizar Pedido
             </span>
-          </a>
+          </Link>
         </div>
       )}
     </div>

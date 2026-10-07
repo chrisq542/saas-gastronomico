@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { formatCurrency, validateRut, cleanPhoneNumber } from '@/lib/utils/formatters';
 import {
@@ -200,12 +201,12 @@ export default function CheckoutPage() {
             <ExternalLink className="w-4 h-4 ml-1 opacity-80" />
           </a>
 
-          <a
+          <Link
             href="/"
             className="block text-sm font-semibold text-slate-600 hover:text-slate-900 pt-2"
           >
             Volver al Menú Principal
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -214,12 +215,12 @@ export default function CheckoutPage() {
   return (
     <div className="space-y-6 pb-20">
       <div className="flex items-center gap-2">
-        <a
+        <Link
           href="/"
           className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 transition text-slate-600"
         >
           <ArrowLeft className="w-5 h-5" />
-        </a>
+        </Link>
         <h2 className="text-2xl font-black text-slate-900">Finalizar Pedido</h2>
       </div>
 
@@ -547,9 +548,9 @@ export default function CheckoutPage() {
               <div className="text-center py-8 text-slate-400 space-y-2">
                 <ShoppingBag className="w-10 h-10 mx-auto opacity-30" />
                 <p className="text-sm">Tu carrito está vacío</p>
-                <a href="/" className="text-xs text-orange-600 font-bold underline">
+                <Link href="/" className="text-xs text-orange-600 font-bold underline">
                   Ir al catálogo
-                </a>
+                </Link>
               </div>
             ) : (
               <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
