@@ -69,3 +69,6 @@ coverage/
 .nyc_output/
 cypress/videos/
 cypress/screenshots/
+
+.vercel
+.env*
