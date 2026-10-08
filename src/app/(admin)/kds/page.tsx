@@ -18,7 +18,6 @@ import {
   RefreshCw,
   Volume2,
   VolumeX,
-  MessageSquare,
   AlertTriangle,
 } from 'lucide-react';
 
@@ -55,7 +54,6 @@ export default function KDSPage() {
           'postgres_changes',
           { event: '*', schema: 'public', table: 'orders' },
           (payload) => {
-            console.log('Realtime order update received:', payload);
             fetchOrders();
 
             // Alerta sonora para nuevos pedidos
@@ -87,17 +85,11 @@ export default function KDSPage() {
         prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o))
       );
 
-      const res = await fetch(`/api/orders/${orderId}`, {
+      await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: nextStatus }),
       });
-
-      const json = await res.json();
-      if (json.customerWhatsAppNotificationUrl && nextStatus === 'READY') {
-        // Opción de enviar notificación por WhatsApp al cliente
-        console.log('Notification URL available:', json.customerWhatsAppNotificationUrl);
-      }
     } catch (err) {
       console.error('Error updating order status:', err);
       fetchOrders();
@@ -116,21 +108,23 @@ export default function KDSPage() {
     return (
       <div
         key={order.id}
-        className={`bg-slate-900 rounded-2xl border flex flex-col justify-between overflow-hidden shadow-lg transition duration-200 ${
-          isDelayed ? 'border-rose-500 shadow-rose-950/40' : 'border-slate-800'
+        className={`bg-white dark:bg-[#121215] rounded-xl border flex flex-col justify-between overflow-hidden shadow-xs transition duration-150 ${
+          isDelayed
+            ? 'border-rose-400 dark:border-rose-900/70 bg-rose-50/10'
+            : 'border-zinc-200/80 dark:border-zinc-800/80'
         }`}
       >
         {/* Cabecera de la Tarjeta */}
-        <div className="p-4 border-b border-slate-800 bg-slate-900/90 flex items-center justify-between">
+        <div className="p-3.5 border-b border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/40 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-black text-white tracking-tight">
+            <span className="text-base font-bold text-zinc-950 dark:text-zinc-50 tracking-tight">
               #{order.orderNumber}
             </span>
             <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+              className={`text-[10px] font-medium px-2 py-0.5 rounded-md flex items-center gap-1 border ${
                 order.orderType === 'DELIVERY'
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                  : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                  ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900/50'
+                  : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/50'
               }`}
             >
               {order.orderType === 'DELIVERY' ? (
@@ -146,50 +140,52 @@ export default function KDSPage() {
           </div>
 
           <div
-            className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${
-              isDelayed ? 'bg-rose-500/20 text-rose-400 animate-pulse' : 'bg-slate-800 text-slate-300'
+            className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md border ${
+              isDelayed
+                ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-900/50'
+                : 'bg-zinc-100 dark:bg-zinc-850 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800'
             }`}
           >
-            <Clock className="w-3.5 h-3.5" />
+            <Clock className="w-3 h-3" />
             <span>{elapsed}m</span>
           </div>
         </div>
 
         {/* Cuerpo: Cliente y Notas */}
-        <div className="p-4 space-y-3 flex-1">
+        <div className="p-3.5 space-y-3 flex-1">
           <div className="flex justify-between items-baseline text-xs">
-            <span className="font-bold text-slate-200 truncate max-w-[170px]">
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[170px]">
               {order.customer?.name || 'Cliente'}
             </span>
-            <span className="text-slate-400 text-[11px]">
+            <span className="text-zinc-500 dark:text-zinc-400 text-[11px]">
               {formatTimeSimple(order.createdAt)}
             </span>
           </div>
 
           {/* Notas generales de cocina */}
           {order.notes && (
-            <div className="p-2 bg-amber-500/10 border border-amber-500/30 rounded-xl text-[11px] text-amber-300 flex items-start gap-1.5 font-medium">
-              <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-400 mt-0.5" />
+            <div className="p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-lg text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
               <span>{order.notes}</span>
             </div>
           )}
 
           {/* Lista de Items */}
-          <div className="space-y-2 pt-1">
+          <div className="space-y-1.5 pt-1">
             {order.items.map((item, idx) => (
               <div
                 key={item.id || idx}
-                className="text-xs bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80"
+                className="text-xs bg-zinc-50 dark:bg-zinc-900/60 p-2 rounded-lg border border-zinc-200/60 dark:border-zinc-800/60"
               >
                 <div className="flex items-start gap-2">
-                  <span className="bg-orange-600 text-white font-black px-1.5 py-0.5 rounded text-[11px]">
+                  <span className="bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 font-semibold px-1.5 py-0.5 rounded text-[10px]">
                     {item.quantity}x
                   </span>
                   <div className="flex-1">
-                    <div className="font-bold text-slate-100 leading-snug">{item.productName}</div>
+                    <div className="font-medium text-zinc-900 dark:text-zinc-100 leading-snug">{item.productName}</div>
                     {item.notes && (
-                      <div className="text-[11px] font-semibold text-orange-400 mt-1 italic">
-                        👉 {item.notes}
+                      <div className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400 mt-0.5 italic">
+                        Nota: {item.notes}
                       </div>
                     )}
                   </div>
@@ -200,12 +196,12 @@ export default function KDSPage() {
         </div>
 
         {/* Acciones de Cocina y Ticket */}
-        <div className="p-3 bg-slate-950/80 border-t border-slate-800 flex items-center justify-between gap-2">
+        <div className="p-2.5 bg-zinc-50/60 dark:bg-zinc-900/40 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between gap-2">
           {/* Botón de Impresión de Comanda 80mm */}
           <button
             onClick={() => setSelectedTicketOrder(order)}
             title="Imprimir comanda térmica 80mm"
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition border border-slate-700"
+            className="p-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-100 transition border border-zinc-200 dark:border-zinc-800"
           >
             <Printer className="w-4 h-4" />
           </button>
@@ -214,7 +210,7 @@ export default function KDSPage() {
           {order.status === 'PENDING' && (
             <button
               onClick={() => handleUpdateStatus(order.id, 'PREPARING')}
-              className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow"
+              className="flex-1 bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 font-medium py-1.5 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow-xs"
             >
               <Flame className="w-3.5 h-3.5" />
               Cocinar
@@ -224,7 +220,7 @@ export default function KDSPage() {
           {order.status === 'PREPARING' && (
             <button
               onClick={() => handleUpdateStatus(order.id, 'READY')}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-1.5 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow-xs"
             >
               <CheckCircle className="w-3.5 h-3.5" />
               Listo
@@ -234,7 +230,7 @@ export default function KDSPage() {
           {order.status === 'READY' && (
             <button
               onClick={() => handleUpdateStatus(order.id, 'DELIVERED')}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black py-2 px-3 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow"
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow-xs"
             >
               <CheckCircle className="w-3.5 h-3.5" />
               Despachar
@@ -248,12 +244,12 @@ export default function KDSPage() {
   return (
     <div className="space-y-6">
       {/* Barra de control del KDS */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900 p-4 rounded-2xl border border-slate-800">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-[#121215] p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl font-black text-white tracking-wide">
+          <h2 className="text-base font-semibold text-zinc-950 dark:text-zinc-50 tracking-tight">
             KDS: Monitor de Cocina
           </h2>
-          <span className="bg-orange-500/20 text-orange-400 font-bold text-xs px-2.5 py-1 rounded-full border border-orange-500/30">
+          <span className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium text-xs px-2.5 py-0.5 rounded-md">
             {orders.length} pedidos activos
           </span>
         </div>
@@ -261,39 +257,39 @@ export default function KDSPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`p-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition ${
               soundEnabled
-                ? 'bg-slate-800 border-slate-700 text-emerald-400'
-                : 'bg-slate-800 border-slate-700 text-slate-500'
+                ? 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-emerald-600 dark:text-emerald-400'
+                : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600'
             }`}
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            {soundEnabled ? 'Sonido ON' : 'Sonido OFF'}
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+            <span>{soundEnabled ? 'Sonido ON' : 'Sonido OFF'}</span>
           </button>
 
           <button
             onClick={fetchOrders}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition"
+            className="p-1.5 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 transition"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* Columnas KDS (Kanban de Cocina) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Columna 1: Pendientes */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 px-4 py-2.5 rounded-xl">
-            <span className="font-bold text-sm text-amber-400 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between bg-zinc-100/80 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 px-3.5 py-2 rounded-lg">
+            <span className="font-semibold text-xs text-zinc-800 dark:text-zinc-200 flex items-center gap-2 tracking-tight">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
               POR INICIAR ({pendingOrders.length})
             </span>
           </div>
 
-          <div className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[calc(100vh-250px)] overflow-y-auto pr-1">
             {pendingOrders.length === 0 ? (
-              <div className="text-center py-12 text-slate-600 text-xs italic">
+              <div className="text-center py-12 text-zinc-400 dark:text-zinc-600 text-xs">
                 Sin pedidos pendientes en cola
               </div>
             ) : (
@@ -303,17 +299,17 @@ export default function KDSPage() {
         </div>
 
         {/* Columna 2: En Preparación */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between bg-blue-500/10 border border-blue-500/30 px-4 py-2.5 rounded-xl">
-            <span className="font-bold text-sm text-blue-400 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between bg-zinc-100/80 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 px-3.5 py-2 rounded-lg">
+            <span className="font-semibold text-xs text-zinc-800 dark:text-zinc-200 flex items-center gap-2 tracking-tight">
+              <span className="w-2 h-2 rounded-full bg-blue-500"></span>
               EN PLANCHA / PREPARACIÓN ({preparingOrders.length})
             </span>
           </div>
 
-          <div className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[calc(100vh-250px)] overflow-y-auto pr-1">
             {preparingOrders.length === 0 ? (
-              <div className="text-center py-12 text-slate-600 text-xs italic">
+              <div className="text-center py-12 text-zinc-400 dark:text-zinc-600 text-xs">
                 Ningún pedido en preparación actual
               </div>
             ) : (
@@ -323,17 +319,17 @@ export default function KDSPage() {
         </div>
 
         {/* Columna 3: Listos para Despacho */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/30 px-4 py-2.5 rounded-xl">
-            <span className="font-bold text-sm text-emerald-400 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between bg-zinc-100/80 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80 px-3.5 py-2 rounded-lg">
+            <span className="font-semibold text-xs text-zinc-800 dark:text-zinc-200 flex items-center gap-2 tracking-tight">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               LISTO / EN ESPERA ({readyOrders.length})
             </span>
           </div>
 
-          <div className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[calc(100vh-250px)] overflow-y-auto pr-1">
             {readyOrders.length === 0 ? (
-              <div className="text-center py-12 text-slate-600 text-xs italic">
+              <div className="text-center py-12 text-zinc-400 dark:text-zinc-600 text-xs">
                 No hay pedidos en zona de empaque
               </div>
             ) : (
@@ -345,25 +341,25 @@ export default function KDSPage() {
 
       {/* Modal de Previsualización e Impresión de Ticket Térmico 80mm */}
       {selectedTicketOrder && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80 pb-3">
               <div>
-                <h3 className="text-base font-bold text-white">
-                  Ticket de Comanda #{selectedTicketOrder.orderNumber}
+                <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">
+                  Comanda #{selectedTicketOrder.orderNumber}
                 </h3>
-                <p className="text-xs text-slate-400">Formato térmico optimizado 80mm</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Formato térmico optimizado 80mm</p>
               </div>
               <button
                 onClick={() => setSelectedTicketOrder(null)}
-                className="text-slate-400 hover:text-white text-sm font-bold"
+                className="text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 text-xs font-semibold p-1"
               >
                 ✕
               </button>
             </div>
 
-            {/* Vista previa del ticket */}
-            <div className="bg-slate-950 p-3 rounded-2xl flex justify-center border border-slate-800">
+            {/* Vista previa del ticket térmico (Mantiene aislamiento fondo blanco y tinta negra) */}
+            <div className="bg-zinc-100 dark:bg-zinc-900 p-3 rounded-lg flex justify-center border border-zinc-200 dark:border-zinc-800">
               <ThermalTicket80mm
                 order={selectedTicketOrder}
                 elementId="thermal-ticket-print"
@@ -371,19 +367,19 @@ export default function KDSPage() {
               />
             </div>
 
-            <div className="flex gap-2 justify-end pt-2">
+            <div className="flex gap-2 justify-end pt-1">
               <button
                 onClick={() => setSelectedTicketOrder(null)}
-                className="px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-slate-800 rounded-xl"
+                className="px-3.5 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-850 rounded-lg transition"
               >
                 Cerrar
               </button>
               <button
                 onClick={() => printThermalTicket('thermal-ticket-print')}
-                className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold bg-orange-600 hover:bg-orange-700 text-white rounded-xl shadow-lg transition"
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 rounded-lg shadow-xs transition"
               >
-                <Printer className="w-4 h-4" />
-                Imprimir en Térmica (80mm)
+                <Printer className="w-3.5 h-3.5" />
+                <span>Imprimir en Térmica (80mm)</span>
               </button>
             </div>
           </div>

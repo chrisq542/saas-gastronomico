@@ -2,29 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 15, 23, 42;
-  --background-rgb: 248, 250, 252;
+@layer base {
+  :root {
+    --background: #FFFFFF;
+    --foreground: #09090B;
+    --card: #FFFFFF;
+    --card-foreground: #09090B;
+    --card-border: rgba(228, 228, 231, 0.8);
+    --muted: #F4F4F5;
+    --muted-foreground: #71717A;
+    --primary: #18181B;
+    --primary-foreground: #FAFAFA;
+    --border: #E4E4E7;
+  }
+
+  .dark {
+    --background: #09090B;
+    --foreground: #F4F4F5;
+    --card: #121215;
+    --card-foreground: #F4F4F5;
+    --card-border: rgba(39, 39, 42, 0.6);
+    --muted: #18181B;
+    --muted-foreground: #A1A1AA;
+    --primary: #FAFAFA;
+    --primary-foreground: #09090B;
+    --border: #27272A;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    color-scheme: light dark;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-}
-
-/* Custom scrollbar for KDS columns */
+/* Minimalist Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: rgba(161, 161, 170, 0.3);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgba(161, 161, 170, 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(63, 63, 70, 0.4);
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(82, 82, 91, 0.6);
+}
+
+/* Thermal Printer Isolation - Always Pure White Background & Pure Black Ink */
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
 }

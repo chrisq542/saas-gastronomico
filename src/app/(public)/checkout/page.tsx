@@ -172,20 +172,20 @@ export default function CheckoutPage() {
 
   if (createdOrderData) {
     return (
-      <div className="max-w-md mx-auto text-center space-y-6 py-12 px-4 bg-white rounded-3xl border border-slate-200 shadow-xl my-6">
-        <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-sm">
-          <CheckCircle2 className="w-10 h-10" />
+      <div className="max-w-md mx-auto text-center space-y-6 py-12 px-6 bg-white dark:bg-[#121215] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs my-6">
+        <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-200 dark:border-emerald-800/80">
+          <CheckCircle2 className="w-6 h-6" />
         </div>
 
-        <div className="space-y-2">
-          <span className="text-xs uppercase font-bold tracking-widest text-emerald-600">
-            ¡Pedido Registrado con Éxito!
+        <div className="space-y-1.5">
+          <span className="text-[11px] uppercase font-semibold tracking-wider text-emerald-600 dark:text-emerald-400">
+            Pedido Registrado con Éxito
           </span>
-          <h2 className="text-3xl font-black text-slate-900">
-            Pedido #{createdOrderData.orderNumber}
+          <h2 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
+            Orden #{createdOrderData.orderNumber}
           </h2>
-          <p className="text-sm text-slate-600">
-            Tu pedido ha ingresado a nuestra cola de cocina. Para una confirmación inmediata, envía el mensaje por WhatsApp:
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            Tu orden ha ingresado al monitor de cocina. Para confirmación y seguimiento, envía el pedido por WhatsApp:
           </p>
         </div>
 
@@ -194,18 +194,18 @@ export default function CheckoutPage() {
             href={createdOrderData.whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg transition text-base"
+            className="flex items-center justify-center gap-2 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-5 rounded-lg shadow-xs transition text-xs sm:text-sm"
           >
-            <Send className="w-5 h-5" />
-            Enviar Pedido por WhatsApp
-            <ExternalLink className="w-4 h-4 ml-1 opacity-80" />
+            <Send className="w-4 h-4" />
+            <span>Enviar Pedido por WhatsApp</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-70" />
           </a>
 
           <Link
             href="/"
-            className="block text-sm font-semibold text-slate-600 hover:text-slate-900 pt-2"
+            className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 transition pt-1"
           >
-            Volver al Menú Principal
+            ← Volver al Menú Principal
           </Link>
         </div>
       </div>
@@ -214,83 +214,85 @@ export default function CheckoutPage() {
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <Link
           href="/"
-          className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 transition text-slate-600"
+          className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-800 transition text-zinc-600 dark:text-zinc-400"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4" />
         </Link>
-        <h2 className="text-2xl font-black text-slate-900">Finalizar Pedido</h2>
+        <h2 className="text-xl font-bold tracking-tight text-zinc-950 dark:text-zinc-100">
+          Finalizar Pedido
+        </h2>
       </div>
 
       {errorMessage && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-sm p-4 rounded-2xl flex items-center gap-2">
-          <AlertCircle className="w-5 h-5 shrink-0" />
+        <div className="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 text-xs p-3.5 rounded-lg flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
         {/* Formulario de Checkout */}
-        <form onSubmit={handleSubmitOrder} className="lg:col-span-7 space-y-6">
+        <form onSubmit={handleSubmitOrder} className="lg:col-span-7 space-y-5">
           {/* Tipo de Entrega */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
-            <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wide">
+          <div className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 space-y-3 shadow-xs">
+            <h3 className="font-semibold text-zinc-950 dark:text-zinc-100 text-xs uppercase tracking-wide">
               1. Modalidad de Entrega
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setOrderType('DELIVERY')}
-                className={`flex flex-col items-center justify-center p-4 rounded-xl border text-sm font-bold transition gap-1.5 ${
+                className={`flex flex-col items-center justify-center p-3.5 rounded-lg border text-xs font-medium transition gap-1 ${
                   orderType === 'DELIVERY'
-                    ? 'border-orange-600 bg-orange-50 text-orange-700 shadow-sm'
-                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'border-zinc-950 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-100 shadow-xs'
+                    : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900'
                 }`}
               >
-                <Bike className="w-6 h-6" />
-                Delivery a Domicilio
-                <span className="text-[11px] font-normal text-slate-500">+$2.000</span>
+                <Bike className="w-5 h-5" />
+                <span>Delivery a Domicilio</span>
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">+$2.000</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setOrderType('PICKUP')}
-                className={`flex flex-col items-center justify-center p-4 rounded-xl border text-sm font-bold transition gap-1.5 ${
+                className={`flex flex-col items-center justify-center p-3.5 rounded-lg border text-xs font-medium transition gap-1 ${
                   orderType === 'PICKUP'
-                    ? 'border-orange-600 bg-orange-50 text-orange-700 shadow-sm'
-                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'border-zinc-950 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-100 shadow-xs'
+                    : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900'
                 }`}
               >
-                <Store className="w-6 h-6" />
-                Retiro en Local
-                <span className="text-[11px] font-normal text-emerald-600">Gratis</span>
+                <Store className="w-5 h-5" />
+                <span>Retiro en Local</span>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Gratis</span>
               </button>
             </div>
           </div>
 
           {/* Datos del Cliente */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-sm">
-            <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wide">
+          <div className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 space-y-4 shadow-xs">
+            <h3 className="font-semibold text-zinc-950 dark:text-zinc-100 text-xs uppercase tracking-wide">
               2. Datos del Cliente (Sin Registro)
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Nombre Completo *</label>
+                <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Nombre Completo *</label>
                 <input
                   type="text"
                   required
                   placeholder="Ej: Juan Pérez"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">
+                <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
                   Teléfono Móvil (WhatsApp) *
                 </label>
                 <input
@@ -300,29 +302,29 @@ export default function CheckoutPage() {
                   value={phone}
                   onBlur={handlePhoneBlur}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">RUT / DNI (Opcional)</label>
+                <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">RUT / DNI (Opcional)</label>
                 <input
                   type="text"
                   placeholder="Ej: 12.345.678-K"
                   value={rut}
                   onChange={(e) => setRut(e.target.value)}
-                  className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Email (Opcional)</label>
+                <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Email (Opcional)</label>
                 <input
                   type="email"
                   placeholder="tu@correo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
                 />
               </div>
             </div>
@@ -330,28 +332,28 @@ export default function CheckoutPage() {
 
           {/* Dirección para Delivery */}
           {orderType === 'DELIVERY' && (
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 shadow-sm">
+            <div className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 space-y-4 shadow-xs">
               <div className="flex justify-between items-center">
-                <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wide">
+                <h3 className="font-semibold text-zinc-950 dark:text-zinc-100 text-xs uppercase tracking-wide">
                   3. Dirección de Entrega
                 </h3>
-                <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
-                  Máximo 3 direcciones por cliente
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Máximo 3 direcciones guardadas
                 </span>
               </div>
 
-              {/* Si tiene direcciones previas registradas */}
+              {/* Si tiene direcciones previas */}
               {existingAddresses.length > 0 && (
                 <div className="space-y-2">
-                  <span className="text-xs font-medium text-slate-600">Direcciones guardadas:</span>
+                  <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Direcciones guardadas:</span>
                   <div className="space-y-2">
                     {existingAddresses.map((addr) => (
                       <label
                         key={addr.id}
-                        className={`flex items-center gap-3 p-3 rounded-xl border text-xs cursor-pointer transition ${
+                        className={`flex items-center gap-3 p-2.5 rounded-lg border text-xs cursor-pointer transition ${
                           selectedAddressId === addr.id
-                            ? 'border-orange-500 bg-orange-50/50 font-bold'
-                            : 'border-slate-200 hover:bg-slate-50'
+                            ? 'border-zinc-950 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-900 font-medium'
+                            : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300'
                         }`}
                       >
                         <input
@@ -359,7 +361,7 @@ export default function CheckoutPage() {
                           name="addressSelection"
                           checked={selectedAddressId === addr.id}
                           onChange={() => setSelectedAddressId(addr.id)}
-                          className="accent-orange-600"
+                          className="accent-zinc-950 dark:accent-zinc-100"
                         />
                         <span>
                           {addr.street} #{addr.number} {addr.apartment ? `Depto ${addr.apartment}` : ''}
@@ -367,10 +369,10 @@ export default function CheckoutPage() {
                       </label>
                     ))}
                     <label
-                      className={`flex items-center gap-3 p-3 rounded-xl border text-xs cursor-pointer transition ${
+                      className={`flex items-center gap-3 p-2.5 rounded-lg border text-xs cursor-pointer transition ${
                         selectedAddressId === null
-                          ? 'border-orange-500 bg-orange-50/50 font-bold'
-                          : 'border-slate-200 hover:bg-slate-50'
+                          ? 'border-zinc-950 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-900 font-medium'
+                          : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300'
                       }`}
                     >
                       <input
@@ -378,7 +380,7 @@ export default function CheckoutPage() {
                         name="addressSelection"
                         checked={selectedAddressId === null}
                         onChange={() => setSelectedAddressId(null)}
-                        className="accent-orange-600"
+                        className="accent-zinc-950 dark:accent-zinc-100"
                       />
                       <span>Ingresar una dirección nueva</span>
                     </label>
@@ -390,31 +392,31 @@ export default function CheckoutPage() {
               {selectedAddressId === null && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-700">Calle *</label>
+                    <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Calle *</label>
                     <input
                       type="text"
                       required
                       placeholder="Ej: Av. Providencia"
                       value={street}
                       onChange={(e) => setStreet(e.target.value)}
-                      className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                      className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-700">Número *</label>
+                    <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">Número *</label>
                     <input
                       type="text"
                       required
                       placeholder="Ej: 1234"
                       value={number}
                       onChange={(e) => setNumber(e.target.value)}
-                      className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                      className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-700">
+                    <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
                       Depto / Torre / Casa (Opcional)
                     </label>
                     <input
@@ -422,12 +424,12 @@ export default function CheckoutPage() {
                       placeholder="Ej: Depto 402"
                       value={apartment}
                       onChange={(e) => setApartment(e.target.value)}
-                      className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                      className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-700">
+                    <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
                       Referencia de entrega
                     </label>
                     <input
@@ -435,7 +437,7 @@ export default function CheckoutPage() {
                       placeholder="Ej: Portón negro, timbre 402"
                       value={reference}
                       onChange={(e) => setReference(e.target.value)}
-                      className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                      className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -444,8 +446,8 @@ export default function CheckoutPage() {
           )}
 
           {/* Método de Pago */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3 shadow-sm">
-            <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wide">
+          <div className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 space-y-3 shadow-xs">
+            <h3 className="font-semibold text-zinc-950 dark:text-zinc-100 text-xs uppercase tracking-wide">
               4. Forma de Pago
             </h3>
 
@@ -453,46 +455,46 @@ export default function CheckoutPage() {
               <button
                 type="button"
                 onClick={() => setPaymentMethod('CASH')}
-                className={`flex items-center gap-2 p-3.5 rounded-xl border text-xs font-bold transition ${
+                className={`flex items-center gap-2 p-3 rounded-lg border text-xs font-medium transition ${
                   paymentMethod === 'CASH'
-                    ? 'border-orange-600 bg-orange-50 text-orange-700 shadow-sm'
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'border-zinc-950 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-100 shadow-xs'
+                    : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900'
                 }`}
               >
-                <Banknote className="w-5 h-5 text-emerald-600" />
-                Efectivo
+                <Banknote className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Efectivo</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod('CARD_ON_DELIVERY')}
-                className={`flex items-center gap-2 p-3.5 rounded-xl border text-xs font-bold transition ${
+                className={`flex items-center gap-2 p-3 rounded-lg border text-xs font-medium transition ${
                   paymentMethod === 'CARD_ON_DELIVERY'
-                    ? 'border-orange-600 bg-orange-50 text-orange-700 shadow-sm'
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'border-zinc-950 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-100 shadow-xs'
+                    : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900'
                 }`}
               >
-                <CreditCard className="w-5 h-5 text-blue-600" />
-                Tarjeta (POS)
+                <CreditCard className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span>Tarjeta (POS)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setPaymentMethod('TRANSFER')}
-                className={`flex items-center gap-2 p-3.5 rounded-xl border text-xs font-bold transition ${
+                className={`flex items-center gap-2 p-3 rounded-lg border text-xs font-medium transition ${
                   paymentMethod === 'TRANSFER'
-                    ? 'border-orange-600 bg-orange-50 text-orange-700 shadow-sm'
-                    : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                    ? 'border-zinc-950 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-100 shadow-xs'
+                    : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900'
                 }`}
               >
-                <Banknote className="w-5 h-5 text-amber-600" />
-                Transferencia
+                <Banknote className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                <span>Transferencia</span>
               </button>
             </div>
 
             {paymentMethod === 'CASH' && (
               <div className="pt-2">
-                <label className="text-xs font-semibold text-slate-700">
+                <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
                   ¿Con cuánto pagas? (Para llevarte vuelto):
                 </label>
                 <input
@@ -500,15 +502,15 @@ export default function CheckoutPage() {
                   placeholder="Ej: 20000"
                   value={cashAmount}
                   onChange={(e) => setCashAmount(e.target.value)}
-                  className="w-full text-sm border border-slate-200 rounded-xl px-3.5 py-2 mt-1 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 mt-1 text-zinc-900 dark:text-zinc-100 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
                 />
               </div>
             )}
           </div>
 
           {/* Notas generales */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-2 shadow-sm">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+          <div className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 space-y-2 shadow-xs">
+            <label className="text-xs font-semibold text-zinc-950 dark:text-zinc-100 uppercase tracking-wide">
               Notas adicionales del pedido
             </label>
             <textarea
@@ -516,21 +518,21 @@ export default function CheckoutPage() {
               placeholder="Instrucciones para el repartidor o detalles adicionales..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full text-sm border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+              className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-3 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
             />
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting || items.length === 0}
-            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-6 rounded-2xl text-base shadow-lg shadow-orange-600/30 transition flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 font-medium py-3.5 px-6 rounded-lg text-sm shadow-xs transition flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isSubmitting ? (
               'Enviando a cocina...'
             ) : (
               <>
-                <ShoppingBag className="w-5 h-5" />
-                Confirmar Pedido ({formatCurrency(grandTotal)})
+                <ShoppingBag className="w-4 h-4" />
+                <span>Confirmar Pedido ({formatCurrency(grandTotal)})</span>
               </>
             )}
           </button>
@@ -538,17 +540,17 @@ export default function CheckoutPage() {
 
         {/* Resumen del Carrito Sidebar */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 sticky top-20">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-              <h3 className="font-bold text-slate-900 text-base">Resumen del Pedido</h3>
-              <span className="text-xs font-semibold text-slate-500">{totalItems} productos</span>
+          <div className="bg-white dark:bg-[#121215] p-5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs space-y-4 sticky top-20">
+            <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800/80 pb-3">
+              <h3 className="font-semibold text-zinc-950 dark:text-zinc-100 text-sm">Resumen del Pedido</h3>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">{totalItems} productos</span>
             </div>
 
             {items.length === 0 ? (
-              <div className="text-center py-8 text-slate-400 space-y-2">
-                <ShoppingBag className="w-10 h-10 mx-auto opacity-30" />
-                <p className="text-sm">Tu carrito está vacío</p>
-                <Link href="/" className="text-xs text-orange-600 font-bold underline">
+              <div className="text-center py-8 text-zinc-400 dark:text-zinc-600 space-y-2">
+                <ShoppingBag className="w-8 h-8 mx-auto opacity-40" />
+                <p className="text-xs">Tu carrito está vacío</p>
+                <Link href="/" className="text-xs text-zinc-950 dark:text-zinc-100 font-medium underline">
                   Ir al catálogo
                 </Link>
               </div>
@@ -557,45 +559,45 @@ export default function CheckoutPage() {
                 {items.map((item) => (
                   <div
                     key={item.product.id}
-                    className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 text-sm"
+                    className="flex items-start justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 text-xs"
                   >
                     <div className="flex-1">
-                      <div className="font-bold text-slate-900 leading-snug">{item.product.name}</div>
-                      <div className="text-xs text-slate-500">
+                      <div className="font-medium text-zinc-950 dark:text-zinc-100 leading-snug">{item.product.name}</div>
+                      <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
                         {formatCurrency(item.product.price)} c/u
                       </div>
                       {item.notes && (
-                        <div className="text-[11px] text-orange-600 italic mt-0.5">
+                        <div className="text-[11px] text-zinc-500 dark:text-zinc-400 italic mt-0.5">
                           Nota: {item.notes}
                         </div>
                       )}
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center border border-slate-200 rounded-lg bg-slate-50">
+                      <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-md bg-zinc-50 dark:bg-zinc-900">
                         <button
                           type="button"
                           onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                          className="p-1 hover:text-orange-600"
+                          className="p-1 hover:text-zinc-950 dark:hover:text-zinc-100"
                         >
-                          <Minus className="w-3.5 h-3.5" />
+                          <Minus className="w-3 h-3" />
                         </button>
-                        <span className="px-2 text-xs font-bold">{item.quantity}</span>
+                        <span className="px-2 text-xs font-medium text-zinc-950 dark:text-zinc-100">{item.quantity}</span>
                         <button
                           type="button"
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                          className="p-1 hover:text-orange-600"
+                          className="p-1 hover:text-zinc-950 dark:hover:text-zinc-100"
                         >
-                          <Plus className="w-3.5 h-3.5" />
+                          <Plus className="w-3 h-3" />
                         </button>
                       </div>
 
                       <button
                         type="button"
                         onClick={() => removeItem(item.product.id)}
-                        className="text-slate-400 hover:text-rose-600 p-1"
+                        className="text-zinc-400 hover:text-rose-600 p-1 transition"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -604,18 +606,18 @@ export default function CheckoutPage() {
             )}
 
             {/* Totales */}
-            <div className="space-y-1.5 pt-2 text-sm border-t border-slate-100">
-              <div className="flex justify-between text-slate-600">
+            <div className="space-y-1.5 pt-2 text-xs border-t border-zinc-100 dark:border-zinc-800/80">
+              <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
                 <span>Subtotal:</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
                 <span>Costo de Envío:</span>
                 <span>{orderType === 'DELIVERY' ? formatCurrency(deliveryFee) : 'Gratis'}</span>
               </div>
-              <div className="flex justify-between text-base font-black text-slate-900 pt-2 border-t border-slate-200">
+              <div className="flex justify-between text-sm font-semibold text-zinc-950 dark:text-zinc-100 pt-2 border-t border-zinc-200 dark:border-zinc-800">
                 <span>Total:</span>
-                <span className="text-orange-600">{formatCurrency(grandTotal)}</span>
+                <span>{formatCurrency(grandTotal)}</span>
               </div>
             </div>
           </div>

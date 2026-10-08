@@ -3,57 +3,51 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  UtensilsCrossed,
   ShieldCheck,
   ChefHat,
-  Smartphone,
   ArrowRight,
-  Store,
   Layers,
-  Sparkles,
   Zap,
-  CheckCircle,
+  Check,
   ExternalLink,
+  Store,
+  Receipt,
 } from 'lucide-react';
 
 export default function SaaSIndexPage() {
   return (
-    <div className="space-y-24 py-12 md:py-20">
+    <div className="space-y-16 sm:space-y-24 py-12 sm:py-16">
       {/* 1. HERO SECTION */}
-      <section className="max-w-5xl mx-auto px-4 text-center space-y-8">
-        <div className="inline-flex items-center gap-2 bg-orange-950/80 border border-orange-800/80 px-4 py-1.5 rounded-full text-xs font-semibold text-orange-400">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Solución B2B Gastronómica Multi-Tenant</span>
+      <section className="max-w-4xl mx-auto px-4 text-center space-y-6">
+        <div className="inline-flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-1 rounded-full text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span>Arquitectura Gastronómica Multi-Tenant B2B</span>
         </div>
 
-        <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight">
-          Gestiona múltiples restaurantes con{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
-            menú digital, KDS y WhatsApp
-          </span>
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 max-w-3xl mx-auto leading-[1.12]">
+          Gestión inteligente de locales gastronómicos con menú digital y KDS
         </h1>
 
-        <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          La suite tecnológica para cadenas de comida rápida y locales independientes.
-          Elimina comisiones de marketplaces con pedidos directos, comanda térmica de 80mm y aislamiento total por sucursal.
+        <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto font-normal leading-relaxed">
+          Plataforma centralizada para cadenas y restaurantes independientes. Pedidos directos sin comisiones, aislamiento total por sucursal, comanda térmica de 80mm y monitor de cocina en tiempo real.
         </p>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+        {/* Action Buttons: High contrast neutral + 1px outline */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href="/login"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm px-7 py-3.5 rounded-xl shadow-xl shadow-orange-600/30 transition transform hover:-translate-y-0.5"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 font-medium text-xs sm:text-sm px-5 py-2.5 rounded-lg shadow-xs transition"
           >
             <ShieldCheck className="w-4 h-4" />
-            <span>Ingresar al Portal (Login)</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>Ingresar al Sistema</span>
+            <ArrowRight className="w-3.5 h-3.5 opacity-70" />
           </Link>
 
           <Link
             href="/sas-burger"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-sm px-6 py-3.5 rounded-xl transition"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 font-medium text-xs sm:text-sm px-5 py-2.5 rounded-lg transition"
           >
-            <span>🍔 Probar Tienda Demo (SAS Burger)</span>
+            <span>Ver Tienda Demo (/sas-burger)</span>
             <ExternalLink className="w-3.5 h-3.5 opacity-60" />
           </Link>
         </div>
@@ -61,67 +55,70 @@ export default function SaaSIndexPage() {
 
       {/* 2. TENANT DEMO SHOWCASE CARD */}
       <section className="max-w-5xl mx-auto px-4">
-        <div className="bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-orange-600/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
+        <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-6 sm:p-8 shadow-xs">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
             <div className="space-y-4 max-w-xl">
-              <div className="inline-flex items-center gap-2 bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 text-xs font-semibold px-3 py-1 rounded-full">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>Inquilino Demo Activo en Base de Datos</span>
+              <div className="inline-flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 text-xs font-medium px-2.5 py-1 rounded-md">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>Inquilino de Demostración Activo</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-white">
-                SAS Burger Demo
-              </h2>
-              <p className="text-sm text-slate-400">
-                Local de hamburguesas smash configurado en Supabase bajo el identificador único <code className="text-orange-400 font-mono">sas-burger</code>. Explora la experiencia del cliente o el flujo interno de cocina.
-              </p>
 
-              <div className="grid grid-cols-2 gap-3 pt-2 text-xs text-slate-300">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
+                  SAS Burger Demo
+                </h2>
+                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1">
+                  Local configurado en base de datos bajo el identificador único <code className="text-zinc-900 dark:text-zinc-200 font-mono font-medium px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-850 rounded text-xs">sas-burger</code>. Explora la experiencia del cliente final o la operativa de cocina.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 text-xs text-zinc-600 dark:text-zinc-400">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-orange-500" />
-                  <span>Catálogo de 4 productos activos</span>
+                  <Check className="w-3.5 h-3.5 text-zinc-950 dark:text-zinc-200" />
+                  <span>Catálogo de productos y categorías</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-orange-500" />
-                  <span>Checkout sin registro en 3 clics</span>
+                  <Check className="w-3.5 h-3.5 text-zinc-950 dark:text-zinc-200" />
+                  <span>Checkout rápido sin registro</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-orange-500" />
-                  <span>Monitor KDS en tiempo real</span>
+                  <Check className="w-3.5 h-3.5 text-zinc-950 dark:text-zinc-200" />
+                  <span>Pantalla KDS en tiempo real</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-orange-500" />
-                  <span>Despacho y comanda 80mm</span>
+                  <Check className="w-3.5 h-3.5 text-zinc-950 dark:text-zinc-200" />
+                  <span>Impresión térmica comanda 80mm</span>
                 </div>
               </div>
             </div>
 
             {/* Direct Access Buttons for Demo Tenant */}
-            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0">
               <Link
                 href="/sas-burger"
-                className="flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs px-5 py-3 rounded-xl shadow-lg transition"
+                className="inline-flex items-center justify-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 font-medium text-xs px-4 py-2.5 rounded-lg transition shadow-xs"
               >
-                <span>Ver Carta Comensal (/sas-burger)</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <Store className="w-3.5 h-3.5" />
+                <span>Ver Carta Digital (/sas-burger)</span>
+                <ExternalLink className="w-3 h-3 opacity-60" />
               </Link>
 
               <Link
                 href="/kds"
-                className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 font-semibold text-xs px-5 py-3 rounded-xl transition"
+                className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 font-medium text-xs px-4 py-2.5 rounded-lg transition"
               >
-                <ChefHat className="w-4 h-4" />
+                <ChefHat className="w-3.5 h-3.5" />
                 <span>Monitor Cocina KDS (/kds)</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-3 h-3 opacity-60" />
               </Link>
 
               <Link
                 href="/orders"
-                className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-semibold text-xs px-5 py-3 rounded-xl transition"
+                className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 font-medium text-xs px-4 py-2.5 rounded-lg transition"
               >
-                <span>Panel de Pedidos (/orders)</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <Receipt className="w-3.5 h-3.5" />
+                <span>Gestión de Pedidos (/orders)</span>
+                <ExternalLink className="w-3 h-3 opacity-60" />
               </Link>
             </div>
           </div>
@@ -129,44 +126,50 @@ export default function SaaSIndexPage() {
       </section>
 
       {/* 3. MULTI-TENANT ARCHITECTURE HIGHLIGHTS */}
-      <section className="max-w-5xl mx-auto px-4 space-y-12">
-        <div className="text-center space-y-3">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white">
-            Pilares de la Arquitectura Multi-Tenant
+      <section className="max-w-5xl mx-auto px-4 space-y-8">
+        <div className="text-center space-y-2">
+          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
+            Arquitectura del Sistema
           </h2>
-          <p className="text-sm text-slate-400 max-w-xl mx-auto">
-            Diseñado para escalar de 1 a miles de locales bajo una base de datos centralizada y segura.
+          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-lg mx-auto">
+            Diseñado para operar eficientemente desde un local individual hasta múltiples sucursales.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-600/20 text-orange-400 flex items-center justify-center">
-              <Layers className="w-5 h-5" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 p-5 sm:p-6 rounded-xl space-y-3 shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
+              <Layers className="w-4 h-4" />
             </div>
-            <h3 className="text-base font-bold text-white">Aislamiento por Tenant</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Cada restaurante opera de manera independiente mediante <code className="text-orange-400">restaurant_id</code>. Clientes, pedidos y productos nunca se cruzan entre locales.
+            <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">
+              Aislamiento por Tenant
+            </h3>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Cada restaurante opera de manera independiente con clave de aislamiento discriminada por <code className="font-mono text-zinc-900 dark:text-zinc-200">restaurant_id</code>. Clientes y pedidos nunca se mezclan.
             </p>
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-600/20 text-amber-400 flex items-center justify-center">
-              <Zap className="w-5 h-5" />
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 p-5 sm:p-6 rounded-xl space-y-3 shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
+              <Zap className="w-4 h-4" />
             </div>
-            <h3 className="text-base font-bold text-white">Supabase Realtime</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Los pedidos creados en el checkout impactan de inmediato en la pantalla de cocina del local mediante WebSockets nativos de PostgreSQL.
+            <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">
+              Supabase Realtime
+            </h3>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Los pedidos registrados en el checkout impactan de forma instantánea en la pantalla de cocina mediante WebSockets nativos de PostgreSQL.
             </p>
           </div>
 
-          <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-600/20 text-sky-400 flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5" />
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 p-5 sm:p-6 rounded-xl space-y-3 shadow-xs">
+            <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
+              <ShieldCheck className="w-4 h-4" />
             </div>
-            <h3 className="text-base font-bold text-white">Consola Master Superadmin</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Panel maestro para Christopher y Andrew para monitorear inquilinos, crear tiendas, auditar estados y asignar credenciales de acceso.
+            <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">
+              Consola Master Superadmin
+            </h3>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Panel unificado para administración global de cuentas, monitoreo de sucursales activas y configuración de credenciales de acceso.
             </p>
           </div>
         </div>
@@ -174,21 +177,24 @@ export default function SaaSIndexPage() {
 
       {/* 4. CALL TO ACTION */}
       <section className="max-w-4xl mx-auto px-4 text-center">
-        <div className="bg-gradient-to-r from-orange-900/40 via-slate-900 to-amber-950/40 border border-orange-800/40 rounded-3xl p-8 sm:p-12 space-y-6">
-          <h2 className="text-2xl sm:text-3xl font-black text-white">
-            ¿Listo para gestionar tus locales?
-          </h2>
-          <p className="text-sm text-slate-300 max-w-lg mx-auto">
-            Inicia sesión con tu cuenta Master para acceder a la administración global de inquilinos.
-          </p>
+        <div className="bg-zinc-50 dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl p-8 sm:p-10 space-y-5 shadow-xs">
+          <div className="space-y-2">
+            <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
+              Accede a la consola de administración
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto">
+              Inicia sesión con tu cuenta Master o credenciales asignadas de sucursal.
+            </p>
+          </div>
+
           <div>
             <Link
               href="/login"
-              className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm px-8 py-3.5 rounded-xl shadow-xl shadow-orange-600/30 transition"
+              className="inline-flex items-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 font-medium text-xs sm:text-sm px-6 py-2.5 rounded-lg shadow-xs transition"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Ingresar al Sistema (Login)</span>
-              <ArrowRight className="w-4 h-4" />
+              <span>Ingresar al Portal (Login)</span>
+              <ArrowRight className="w-3.5 h-3.5 opacity-70" />
             </Link>
           </div>
         </div>
