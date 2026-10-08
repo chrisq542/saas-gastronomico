@@ -1,336 +1,198 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useCart } from '@/context/CartContext';
-import { Product, Category } from '@/types';
-import { formatCurrency } from '@/lib/utils/formatters';
-import { Plus, ShoppingBag, Flame, Sparkles, Check } from 'lucide-react';
+import {
+  UtensilsCrossed,
+  ShieldCheck,
+  ChefHat,
+  Smartphone,
+  ArrowRight,
+  Store,
+  Layers,
+  Sparkles,
+  Zap,
+  CheckCircle,
+  ExternalLink,
+} from 'lucide-react';
 
-// Datos de fallback en caso de que la base de datos aún no tenga seed
-const DEFAULT_CATEGORIES: (Category & { products: Product[] })[] = [
-  {
-    id: 'cat-1',
-    name: 'Hamburguesas Smash',
-    slug: 'smash-burgers',
-    sortOrder: 1,
-    isActive: true,
-    products: [
-      {
-        id: 'prod-1',
-        categoryId: 'cat-1',
-        name: 'Doble Bacon Cheese Smash',
-        description: 'Doble medallón 100g de carne angus smash, queso cheddar americano fundido, tocino ahumado crocante y salsa especial.',
-        price: 8990,
-        imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80',
-        isAvailable: true,
-        preparationTime: 15,
-      },
-      {
-        id: 'prod-2',
-        categoryId: 'cat-1',
-        name: 'Triple Oklahoma Onion Burger',
-        description: 'Tres medallones smash con cebolla caramelizada incrustada en la plancha, triple cheddar y pepinillos dulces.',
-        price: 10490,
-        imageUrl: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&auto=format&fit=crop&q=80',
-        isAvailable: true,
-        preparationTime: 20,
-      },
-      {
-        id: 'prod-3',
-        categoryId: 'cat-1',
-        name: 'Crispy Chicken Spicy',
-        description: 'Pechuga de pollo marinada en buttermilk, apanada ultra crocante, ensalada coleslaw y mayonesa chipotle picante.',
-        price: 7990,
-        imageUrl: 'https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=600&auto=format&fit=crop&q=80',
-        isAvailable: true,
-        preparationTime: 15,
-      },
-    ],
-  },
-  {
-    id: 'cat-2',
-    name: 'Papas & Acompañamientos',
-    slug: 'sides',
-    sortOrder: 2,
-    isActive: true,
-    products: [
-      {
-        id: 'prod-4',
-        categoryId: 'cat-2',
-        name: 'Papas Rústicas Cheddar & Bacon',
-        description: 'Papas fritas corte rústico cubiertas con salsa de queso cheddar fundido y trozos de tocino crujiente.',
-        price: 4990,
-        imageUrl: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600&auto=format&fit=crop&q=80',
-        isAvailable: true,
-        preparationTime: 10,
-      },
-      {
-        id: 'prod-5',
-        categoryId: 'cat-2',
-        name: 'Aros de Cebolla Crocantes (8 un)',
-        description: 'Aros de cebolla rebozados con salsa BBQ ahumada casera.',
-        price: 3890,
-        imageUrl: 'https://images.unsplash.com/photo-1639024471285-0afc38332a67?w=600&auto=format&fit=crop&q=80',
-        isAvailable: true,
-        preparationTime: 10,
-      },
-    ],
-  },
-  {
-    id: 'cat-3',
-    name: 'Bebidas & Refrescos',
-    slug: 'drinks',
-    sortOrder: 3,
-    isActive: true,
-    products: [
-      {
-        id: 'prod-6',
-        categoryId: 'cat-3',
-        name: 'Bebida Lata 350ml (Coca Cola / Zero)',
-        description: 'Lata bien helada a elección del cliente.',
-        price: 1800,
-        imageUrl: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=600&auto=format&fit=crop&q=80',
-        isAvailable: true,
-        preparationTime: 2,
-      },
-    ],
-  },
-];
-
-export default function MenuCatalogPage() {
-  const { addItem, totalItems, subtotal } = useCart();
-  const [categories, setCategories] = useState<any[]>(DEFAULT_CATEGORIES);
-  const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [itemNote, setItemNote] = useState<string>('');
-  const [justAddedId, setJustAddedId] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Intentar consultar API de menú si está disponible
-    fetch('/api/menu')
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.success && res.data && res.data.length > 0) {
-          setCategories(res.data);
-        }
-      })
-      .catch(() => {
-        // En desarrollo inicial usamos los datos fallback
-      });
-  }, []);
-
-  const handleQuickAdd = (product: Product) => {
-    addItem(product, 1, '');
-    setJustAddedId(product.id);
-    setTimeout(() => setJustAddedId(null), 1200);
-  };
-
-  const handleCustomAdd = () => {
-    if (selectedProduct) {
-      addItem(selectedProduct, 1, itemNote);
-      setSelectedProduct(null);
-      setItemNote('');
-    }
-  };
-
-  const filteredCategories =
-    activeCategoryId === 'all'
-      ? categories
-      : categories.filter((c) => c.id === activeCategoryId);
-
+export default function SaaSIndexPage() {
   return (
-    <div className="space-y-8 pb-20">
-      {/* Hero Promocional */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 text-white p-6 sm:p-8 shadow-xl">
-        <div className="relative z-10 max-w-lg space-y-2">
-          <span className="inline-flex items-center gap-1 bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider backdrop-blur-sm">
-            <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-            FastFood SaaS Online
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-            Pide en 3 clicks sin registros ni contraseñas.
-          </h2>
-          <p className="text-sm text-orange-100">
-            Elige tus combos favoritos, dinos a dónde enviarlo y confirma directamente por WhatsApp.
-          </p>
+    <div className="space-y-24 py-12 md:py-20">
+      {/* 1. HERO SECTION */}
+      <section className="max-w-5xl mx-auto px-4 text-center space-y-8">
+        <div className="inline-flex items-center gap-2 bg-orange-950/80 border border-orange-800/80 px-4 py-1.5 rounded-full text-xs font-semibold text-orange-400">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Solución B2B Gastronómica Multi-Tenant</span>
         </div>
-        <div className="absolute -right-10 -bottom-10 opacity-15">
-          <Flame className="w-64 h-64 text-white" />
+
+        <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight">
+          Gestiona múltiples restaurantes con{' '}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400">
+            menú digital, KDS y WhatsApp
+          </span>
+        </h1>
+
+        <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          La suite tecnológica para cadenas de comida rápida y locales independientes.
+          Elimina comisiones de marketplaces con pedidos directos, comanda térmica de 80mm y aislamiento total por sucursal.
+        </p>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <Link
+            href="/login"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm px-7 py-3.5 rounded-xl shadow-xl shadow-orange-600/30 transition transform hover:-translate-y-0.5"
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>Ingresar al Portal (Login)</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+
+          <Link
+            href="/sas-burger"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-sm px-6 py-3.5 rounded-xl transition"
+          >
+            <span>🍔 Probar Tienda Demo (SAS Burger)</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+          </Link>
         </div>
       </section>
 
-      {/* Selector de Categorías (Pills) */}
-      <div className="sticky top-16 z-20 bg-slate-50/90 backdrop-blur py-2 -mx-4 px-4 overflow-x-auto flex gap-2 no-scrollbar">
-        <button
-          onClick={() => setActiveCategoryId('all')}
-          className={`px-4 py-2 rounded-xl text-sm font-semibold transition whitespace-nowrap ${
-            activeCategoryId === 'all'
-              ? 'bg-slate-900 text-white shadow'
-              : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-          }`}
-        >
-          🍔 Todo el Menú
-        </button>
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategoryId(cat.id)}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold transition whitespace-nowrap ${
-              activeCategoryId === cat.id
-                ? 'bg-orange-600 text-white shadow'
-                : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
-            }`}
-          >
-            {cat.name}
-          </button>
-        ))}
-      </div>
+      {/* 2. TENANT DEMO SHOWCASE CARD */}
+      <section className="max-w-5xl mx-auto px-4">
+        <div className="bg-gradient-to-b from-slate-900 to-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-orange-600/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Listado de Productos agrupados por Categoría */}
-      <div className="space-y-10">
-        {filteredCategories.map((cat) => (
-          <div key={cat.id} className="space-y-4">
-            <h3 className="text-xl font-bold text-slate-900 border-l-4 border-orange-600 pl-3">
-              {cat.name}
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {cat.products?.map((prod: Product) => (
-                <div
-                  key={prod.id}
-                  className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between"
-                >
-                  {prod.imageUrl && (
-                    <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={prod.imageUrl}
-                        alt={prod.name}
-                        className="w-full h-full object-cover hover:scale-105 transition duration-500"
-                        loading="lazy"
-                      />
-                      <span className="absolute bottom-2 right-2 bg-slate-900/80 backdrop-blur-sm text-white font-bold text-xs px-2.5 py-1 rounded-lg">
-                        {formatCurrency(prod.price)}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                    <div>
-                      <h4 className="font-bold text-slate-900 text-base leading-snug">
-                        {prod.name}
-                      </h4>
-                      {prod.description && (
-                        <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                          {prod.description}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="pt-2 flex items-center justify-between border-t border-slate-100">
-                      <button
-                        onClick={() => setSelectedProduct(prod)}
-                        className="text-xs text-orange-600 hover:text-orange-700 font-medium underline"
-                      >
-                        Personalizar nota
-                      </button>
-
-                      <button
-                        onClick={() => handleQuickAdd(prod)}
-                        className={`flex items-center gap-1 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-sm ${
-                          justAddedId === prod.id
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-orange-600 hover:bg-orange-700 text-white'
-                        }`}
-                      >
-                        {justAddedId === prod.id ? (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            Agregado
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="w-3.5 h-3.5" />
-                            Agregar
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Modal de Personalización (Notas de cocina: Sin cebolla, extra salsa, etc.) */}
-      {selectedProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">{selectedProduct.name}</h3>
-              <p className="text-sm font-semibold text-orange-600">
-                {formatCurrency(selectedProduct.price)}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative z-10">
+            <div className="space-y-4 max-w-xl">
+              <div className="inline-flex items-center gap-2 bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 text-xs font-semibold px-3 py-1 rounded-full">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Inquilino Demo Activo en Base de Datos</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white">
+                SAS Burger Demo
+              </h2>
+              <p className="text-sm text-slate-400">
+                Local de hamburguesas smash configurado en Supabase bajo el identificador único <code className="text-orange-400 font-mono">sas-burger</code>. Explora la experiencia del cliente o el flujo interno de cocina.
               </p>
+
+              <div className="grid grid-cols-2 gap-3 pt-2 text-xs text-slate-300">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-orange-500" />
+                  <span>Catálogo de 4 productos activos</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-orange-500" />
+                  <span>Checkout sin registro en 3 clics</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-orange-500" />
+                  <span>Monitor KDS en tiempo real</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-orange-500" />
+                  <span>Despacho y comanda 80mm</span>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">
-                Instrucciones para cocina (opcional):
-              </label>
-              <textarea
-                value={itemNote}
-                onChange={(e) => setItemNote(e.target.value)}
-                placeholder="Ej: Sin cebolla, salsa aparte, carne bien cocida..."
-                rows={3}
-                className="w-full text-sm border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 focus:outline-none"
-              />
-            </div>
+            {/* Direct Access Buttons for Demo Tenant */}
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 shrink-0">
+              <Link
+                href="/sas-burger"
+                className="flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-semibold text-xs px-5 py-3 rounded-xl shadow-lg transition"
+              >
+                <span>Ver Carta Comensal (/sas-burger)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
 
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setSelectedProduct(null)}
-                className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl"
+              <Link
+                href="/kds"
+                className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 font-semibold text-xs px-5 py-3 rounded-xl transition"
               >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCustomAdd}
-                className="px-5 py-2 text-sm font-bold bg-orange-600 hover:bg-orange-700 text-white rounded-xl shadow-md"
+                <ChefHat className="w-4 h-4" />
+                <span>Monitor Cocina KDS (/kds)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+
+              <Link
+                href="/orders"
+                className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-semibold text-xs px-5 py-3 rounded-xl transition"
               >
-                Agregar al Carrito
-              </button>
+                <span>Panel de Pedidos (/orders)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* Barra Flotante Inferior de Checkout (Mobile/Desktop) */}
-      {totalItems > 0 && (
-        <div className="fixed bottom-4 left-4 right-4 max-w-lg mx-auto z-40 animate-in slide-in-from-bottom-5">
-          <Link
-            href="/checkout"
-            className="flex items-center justify-between bg-slate-900 text-white p-4 rounded-2xl shadow-2xl hover:bg-black transition border border-slate-800"
-          >
-            <div className="flex items-center gap-3">
-              <div className="bg-orange-600 text-white w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm">
-                {totalItems}
-              </div>
-              <div>
-                <div className="text-xs text-slate-300">Ver pedido y pagar</div>
-                <div className="text-sm font-bold">{formatCurrency(subtotal)}</div>
-              </div>
-            </div>
-
-            <span className="flex items-center gap-1.5 bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition">
-              <ShoppingBag className="w-4 h-4" />
-              Finalizar Pedido
-            </span>
-          </Link>
+      {/* 3. MULTI-TENANT ARCHITECTURE HIGHLIGHTS */}
+      <section className="max-w-5xl mx-auto px-4 space-y-12">
+        <div className="text-center space-y-3">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white">
+            Pilares de la Arquitectura Multi-Tenant
+          </h2>
+          <p className="text-sm text-slate-400 max-w-xl mx-auto">
+            Diseñado para escalar de 1 a miles de locales bajo una base de datos centralizada y segura.
+          </p>
         </div>
-      )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-600/20 text-orange-400 flex items-center justify-center">
+              <Layers className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-white">Aislamiento por Tenant</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Cada restaurante opera de manera independiente mediante <code className="text-orange-400">restaurant_id</code>. Clientes, pedidos y productos nunca se cruzan entre locales.
+            </p>
+          </div>
+
+          <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-600/20 text-amber-400 flex items-center justify-center">
+              <Zap className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-white">Supabase Realtime</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Los pedidos creados en el checkout impactan de inmediato en la pantalla de cocina del local mediante WebSockets nativos de PostgreSQL.
+            </p>
+          </div>
+
+          <div className="bg-slate-900/80 border border-slate-800 p-6 rounded-2xl space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-sky-600/20 text-sky-400 flex items-center justify-center">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-white">Consola Master Superadmin</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Panel maestro para Christopher y Andrew para monitorear inquilinos, crear tiendas, auditar estados y asignar credenciales de acceso.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. CALL TO ACTION */}
+      <section className="max-w-4xl mx-auto px-4 text-center">
+        <div className="bg-gradient-to-r from-orange-900/40 via-slate-900 to-amber-950/40 border border-orange-800/40 rounded-3xl p-8 sm:p-12 space-y-6">
+          <h2 className="text-2xl sm:text-3xl font-black text-white">
+            ¿Listo para gestionar tus locales?
+          </h2>
+          <p className="text-sm text-slate-300 max-w-lg mx-auto">
+            Inicia sesión con tu cuenta Master para acceder a la administración global de inquilinos.
+          </p>
+          <div>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-bold text-sm px-8 py-3.5 rounded-xl shadow-xl shadow-orange-600/30 transition"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Ingresar al Sistema (Login)</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

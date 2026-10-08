@@ -1,16 +1,31 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const slug = searchParams.get('slug');
+
+    let restaurantId: string | undefined;
+    if (slug) {
+      const rest = await prisma.restaurant.findUnique({
+        where: { slug },
+      });
+      if (rest) {
+        restaurantId = rest.id;
+      }
+    }
+
     const categories = await prisma.category.findMany({
-      where: { isActive: true },
+      where: {
+        ...(restaurantId ? { restaurantId } : {}),
+      },
       orderBy: { sortOrder: 'asc' },
       include: {
         products: {
-          where: { isAvailable: true },
+          where: { isActive: true },
           orderBy: { name: 'asc' },
         },
       },

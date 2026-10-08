@@ -8,6 +8,7 @@ import { Order as OrderType } from '@/types';
 export const dynamic = 'force-dynamic';
 
 const createOrderSchema = z.object({
+  restaurantId: z.string().optional(),
   customer: z.object({
     name: z.string().min(2, 'El nombre es obligatorio'),
     phone: z.string().min(8, 'Teléfono celular requerido'),
@@ -18,8 +19,10 @@ const createOrderSchema = z.object({
   addressId: z.string().optional().nullable(),
   address: z
     .object({
-      street: z.string().min(2),
-      number: z.string().min(1),
+      address: z.string().optional(),
+      commune: z.string().optional(),
+      street: z.string().optional(),
+      number: z.string().optional(),
       apartment: z.string().optional().nullable(),
       city: z.string().default('Santiago'),
       reference: z.string().optional().nullable(),
@@ -45,10 +48,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const phone = searchParams.get('phone');
+    const restaurantId = searchParams.get('restaurantId');
     const limit = parseInt(searchParams.get('limit') || '50', 10);
 
     const orders = await prisma.order.findMany({
       where: {
+        ...(restaurantId ? { restaurantId } : {}),
         ...(status ? { status: status as any } : {}),
         ...(phone
           ? {
@@ -61,9 +66,12 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
       take: limit,
       include: {
-        customer: true,
-        address: true,
-        items: true,
+        customer: {
+          include: { addresses: true },
+        },
+        items: {
+          include: { product: true },
+        },
       },
     });
 
@@ -92,8 +100,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1. Intentar persistir en Base de Datos (PostgreSQL / Prisma)
-    let formattedOrder: OrderType;
+    // Obtener ID del restaurante
+    let restaurantId = data.restaurantId;
+    if (!restaurantId) {
+      const demoRestaurant = await prisma.restaurant.findFirst({
+        where: { slug: 'sas-burger' },
+      });
+      restaurantId = demoRestaurant?.id || 'a1111111-1111-1111-1111-111111111111';
+    }
+
+    let formattedOrder: any;
 
     try {
       const productIds = data.items.map((i) => i.productId);
@@ -105,7 +121,7 @@ export async function POST(request: NextRequest) {
 
       const createdOrder = await prisma.$transaction(async (tx) => {
         let customer = await tx.customer.findFirst({
-          where: { phone: cleanPhone },
+          where: { restaurantId, phone: cleanPhone },
           include: { addresses: true },
         });
 
@@ -114,7 +130,6 @@ export async function POST(request: NextRequest) {
             where: { id: customer.id },
             data: {
               name: data.customer.name,
-              email: data.customer.email || customer.email,
               rut: data.customer.rut || customer.rut,
             },
             include: { addresses: true },
@@ -122,34 +137,32 @@ export async function POST(request: NextRequest) {
         } else {
           customer = await tx.customer.create({
             data: {
+              restaurantId,
               name: data.customer.name,
               phone: cleanPhone,
-              email: data.customer.email,
               rut: data.customer.rut,
             },
             include: { addresses: true },
           });
         }
 
-        let addressId: string | null = data.addressId || null;
-
-        if (data.orderType === 'DELIVERY' && !addressId && data.address) {
+        if (data.orderType === 'DELIVERY' && data.address) {
           const existingAddresses = customer.addresses || [];
           if (existingAddresses.length < 3) {
-            const newAddress = await tx.address.create({
+            const fullAddressText =
+              data.address.address ||
+              `${data.address.street || ''} ${data.address.number || ''} ${
+                data.address.apartment ? 'Depto ' + data.address.apartment : ''
+              }`.trim();
+
+            await tx.address.create({
               data: {
                 customerId: customer.id,
-                street: data.address.street,
-                number: data.address.number,
-                apartment: data.address.apartment,
-                city: data.address.city,
+                address: fullAddressText || 'Dirección de Entrega',
+                commune: data.address.commune || data.address.city || 'Santiago',
                 reference: data.address.reference,
-                isDefault: existingAddresses.length === 0,
               },
             });
-            addressId = newAddress.id;
-          } else {
-            addressId = existingAddresses[0].id;
           }
         }
 
@@ -162,11 +175,9 @@ export async function POST(request: NextRequest) {
 
           return {
             productId: item.productId,
-            productName: prod ? prod.name : 'Producto Menú',
-            unitPrice: priceNum,
             quantity: item.quantity,
-            subtotal: itemSubtotal,
-            notes: item.notes,
+            unitPrice: priceNum,
+            notes: item.notes || null,
           };
         });
 
@@ -178,15 +189,13 @@ export async function POST(request: NextRequest) {
 
         const order = await tx.order.create({
           data: {
+            restaurantId,
             customerId: customer.id,
-            addressId: addressId,
-            orderType: data.orderType,
             status: 'PENDING',
+            deliveryType: data.orderType,
             paymentMethod: data.paymentMethod,
-            paymentStatus: 'PENDING',
             subtotal: subtotal,
             deliveryFee: deliveryFee,
-            discount: 0,
             total: total,
             notes: data.notes,
             items: {
@@ -194,9 +203,12 @@ export async function POST(request: NextRequest) {
             },
           },
           include: {
-            customer: true,
-            address: true,
-            items: true,
+            customer: {
+              include: { addresses: true },
+            },
+            items: {
+              include: { product: true },
+            },
           },
         });
 
@@ -205,14 +217,15 @@ export async function POST(request: NextRequest) {
 
       formattedOrder = {
         ...createdOrder,
+        orderType: createdOrder.deliveryType,
         subtotal: Number(createdOrder.subtotal),
         deliveryFee: Number(createdOrder.deliveryFee),
-        discount: Number(createdOrder.discount),
         total: Number(createdOrder.total),
         items: createdOrder.items.map((it) => ({
           ...it,
+          productName: it.product?.name || 'Producto',
           unitPrice: Number(it.unitPrice),
-          subtotal: Number(it.subtotal),
+          subtotal: Number(it.unitPrice) * it.quantity,
         })),
       };
     } catch (dbError) {
@@ -221,7 +234,6 @@ export async function POST(request: NextRequest) {
         dbError
       );
 
-      // Fallback seguro de simulación
       const mockOrderNumber = Math.floor(1000 + Math.random() * 9000);
       let calcSubtotal = 0;
 
@@ -246,38 +258,20 @@ export async function POST(request: NextRequest) {
         id: `mock-${Date.now()}`,
         orderNumber: mockOrderNumber,
         customerId: `cust-${Date.now()}`,
-        addressId: null,
         orderType: data.orderType,
         status: 'PENDING',
         paymentMethod: data.paymentMethod,
-        paymentStatus: 'PENDING',
         subtotal: calcSubtotal,
         deliveryFee: deliveryFee,
-        discount: 0,
         total: calcSubtotal + deliveryFee,
         notes: data.notes || null,
-        kitchenNotes: null,
         createdAt: new Date().toISOString(),
         customer: {
           id: `cust-${Date.now()}`,
           name: data.customer.name,
           phone: cleanPhone,
-          email: data.customer.email || null,
           rut: data.customer.rut || null,
         },
-        address:
-          data.orderType === 'DELIVERY' && data.address
-            ? {
-                id: `addr-${Date.now()}`,
-                customerId: `cust-${Date.now()}`,
-                street: data.address.street,
-                number: data.address.number,
-                apartment: data.address.apartment || null,
-                city: data.address.city || 'Santiago',
-                reference: data.address.reference || null,
-                isDefault: true,
-              }
-            : null,
         items: fallbackItems,
       };
     }

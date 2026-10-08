@@ -6,27 +6,30 @@ import { z } from 'zod';
 export const dynamic = 'force-dynamic';
 
 const customerSchema = z.object({
+  restaurantId: z.string().optional(),
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   phone: z.string().min(8, 'Teléfono inválido'),
-  email: z.string().email('Email inválido').optional().nullable(),
   rut: z.string().optional().nullable(),
   address: z
     .object({
-      street: z.string().min(2, 'Calle requerida'),
-      number: z.string().min(1, 'Número requerido'),
-      apartment: z.string().optional().nullable(),
-      city: z.string().default('Santiago'),
+      address: z.string().min(2, 'Dirección requerida'),
+      commune: z.string().default('Santiago'),
       reference: z.string().optional().nullable(),
+      street: z.string().optional(),
+      number: z.string().optional(),
+      apartment: z.string().optional(),
+      city: z.string().optional(),
     })
     .optional(),
 });
 
-// GET: Buscar cliente por teléfono o RUT (autocompletado en checkout)
+// GET: Buscar cliente por teléfono o RUT
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const phone = searchParams.get('phone');
     const rut = searchParams.get('rut');
+    const restaurantId = searchParams.get('restaurantId');
 
     if (!phone && !rut) {
       return NextResponse.json(
@@ -39,6 +42,7 @@ export async function GET(request: NextRequest) {
 
     const customer = await prisma.customer.findFirst({
       where: {
+        ...(restaurantId ? { restaurantId } : {}),
         OR: [
           ...(cleanedPhone ? [{ phone: cleanedPhone }] : []),
           ...(rut ? [{ rut }] : []),
@@ -81,9 +85,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar si ya existe por teléfono
+    // Obtener ID del restaurante (por defecto sas-burger)
+    let restaurantId = validatedData.restaurantId;
+    if (!restaurantId) {
+      const demoRestaurant = await prisma.restaurant.findFirst({
+        where: { slug: 'sas-burger' },
+      });
+      restaurantId = demoRestaurant?.id || 'a1111111-1111-1111-1111-111111111111';
+    }
+
+    // Buscar si ya existe por teléfono dentro de este restaurante
     let customer = await prisma.customer.findFirst({
-      where: { phone: cleanPhone },
+      where: { restaurantId, phone: cleanPhone },
       include: { addresses: true },
     });
 
@@ -93,7 +106,6 @@ export async function POST(request: NextRequest) {
         where: { id: customer.id },
         data: {
           name: validatedData.name,
-          email: validatedData.email || customer.email,
           rut: validatedData.rut || customer.rut,
         },
         include: { addresses: true },
@@ -102,9 +114,9 @@ export async function POST(request: NextRequest) {
       // Crear nuevo cliente
       customer = await prisma.customer.create({
         data: {
+          restaurantId,
           name: validatedData.name,
           phone: cleanPhone,
-          email: validatedData.email,
           rut: validatedData.rut,
         },
         include: { addresses: true },
@@ -125,15 +137,18 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const fullAddressText =
+        validatedData.address.address ||
+        `${validatedData.address.street || ''} ${validatedData.address.number || ''} ${
+          validatedData.address.apartment ? 'Depto ' + validatedData.address.apartment : ''
+        }`.trim();
+
       await prisma.address.create({
         data: {
           customerId: customer.id,
-          street: validatedData.address.street,
-          number: validatedData.address.number,
-          apartment: validatedData.address.apartment,
-          city: validatedData.address.city,
+          address: fullAddressText || 'Dirección no especificada',
+          commune: validatedData.address.commune || validatedData.address.city || 'Santiago',
           reference: validatedData.address.reference,
-          isDefault: addressCount === 0,
         },
       });
 
