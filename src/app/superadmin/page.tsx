@@ -13,8 +13,6 @@ import {
   Receipt,
   LogOut,
   Shield,
-  CheckCircle2,
-  Clock,
   Phone,
   Database,
   Building2,
@@ -23,6 +21,7 @@ import {
   RefreshCw,
   ShoppingBag,
 } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 interface Tenant {
   id: string;
@@ -59,7 +58,6 @@ export default function SuperadminPage() {
       .then((res) => res.json())
       .then((res) => {
         if (!res.authenticated || res.user?.role !== 'SUPERADMIN') {
-          // Si no está autenticado como superadmin, redirigir a login
           router.push('/login');
           return;
         }
@@ -105,42 +103,43 @@ export default function SuperadminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-[#FFFFFF] dark:bg-[#09090B] text-[#09090B] dark:text-[#F4F4F5] flex flex-col">
       {/* Top Navigation Bar */}
-      <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+      <header className="border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-lg shadow-orange-600/30">
-              <UtensilsCrossed className="w-5 h-5" />
+            <div className="w-8 h-8 rounded-lg bg-zinc-950 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-950">
+              <UtensilsCrossed className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-lg text-white">FastFood SaaS</span>
-                <span className="bg-orange-950 text-orange-400 border border-orange-800/80 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  Panel Master Superadmin
+                <span className="font-semibold text-sm text-zinc-950 dark:text-zinc-100 tracking-tight">FastFood SaaS</span>
+                <span className="bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 text-[10px] font-medium px-2 py-0.5 rounded-md uppercase tracking-wider">
+                  Master Superadmin
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Control Multi-Tenant Centralizado</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-xs bg-slate-800/80 border border-slate-700/60 px-3 py-1.5 rounded-lg text-slate-300">
-              <Shield className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2 text-xs bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1 rounded-md text-zinc-600 dark:text-zinc-400">
+              <Shield className="w-3.5 h-3.5 text-emerald-500" />
               <span>
                 Master:{' '}
-                <strong className="text-white font-medium">
+                <strong className="text-zinc-950 dark:text-zinc-100 font-medium">
                   {currentUser?.email || 'chrisq542@gmail.com'}
                 </strong>
               </span>
             </div>
 
+            <ThemeToggle />
+
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition"
+              className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 transition"
               title="Cerrar sesión"
             >
-              <LogOut className="w-3.5 h-3.5 text-red-400" />
+              <LogOut className="w-3.5 h-3.5 text-rose-500" />
               <span className="hidden sm:inline">Salir</span>
             </button>
           </div>
@@ -148,27 +147,25 @@ export default function SuperadminPage() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Welcome Banner */}
-        <div className="rounded-2xl bg-gradient-to-r from-orange-950/40 via-slate-900 to-slate-900 border border-orange-900/40 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="rounded-xl bg-zinc-50 dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xs">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-400 bg-orange-950/60 border border-orange-800/60 px-2.5 py-1 rounded-full mb-2">
+            <div className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1 rounded-md mb-2">
               <Building2 className="w-3 h-3" />
-              <span>Gestión de Inquilinos B2B (Multi-Tenant)</span>
+              <span>Gestión de Inquilinos Multi-Tenant</span>
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-semibold text-zinc-950 dark:text-zinc-50 tracking-tight">
               Bienvenido, Christopher & Andrew
             </h1>
-            <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-              Desde esta consola maestra supervisamos los locales gastronómicos registrados, 
-              su aislamiento de datos y el acceso directo a sus módulos de comensales y cocina.
+            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1 max-w-2xl leading-relaxed">
+              Consola maestra para supervisar locales gastronómicos, aislamiento de datos por sucursal y accesos operativos de carta y cocina.
             </p>
           </div>
 
-          {/* Botón de Crear Restaurante (Sin Backend, según requerimiento) */}
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-semibold text-sm px-4 py-2.5 rounded-xl shadow-lg shadow-orange-600/25 transition shrink-0"
+            className="flex items-center gap-2 bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 font-medium text-xs px-4 py-2.5 rounded-lg shadow-xs transition shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Crear Restaurante</span>
@@ -177,47 +174,47 @@ export default function SuperadminPage() {
 
         {/* Global KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl shadow-xs">
+            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
               <span>Restaurantes Activos</span>
-              <Store className="w-4 h-4 text-orange-400" />
+              <Store className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-white">{tenants.length}</span>
-              <span className="text-xs text-emerald-400 font-medium">100% operativos</span>
+              <span className="text-2xl font-bold text-zinc-950 dark:text-zinc-50">{tenants.length}</span>
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">100% operativos</span>
             </div>
           </div>
 
-          <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl shadow-xs">
+            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
               <span>Base de Datos</span>
-              <Database className="w-4 h-4 text-emerald-400" />
+              <Database className="w-4 h-4 text-emerald-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-base font-semibold text-white">Supabase PgBouncer</span>
-              <span className="text-xs text-emerald-400">● Conectado</span>
+              <span className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">Supabase PgBouncer</span>
+              <span className="text-[11px] text-emerald-600 dark:text-emerald-400">● Conectado</span>
             </div>
           </div>
 
-          <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl shadow-xs">
+            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
               <span>Aislamiento de Datos</span>
-              <Layers className="w-4 h-4 text-sky-400" />
+              <Layers className="w-4 h-4 text-blue-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-base font-semibold text-white">restaurant_id</span>
-              <span className="text-xs text-sky-400 font-medium">Discriminador activo</span>
+              <span className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">restaurant_id</span>
+              <span className="text-[11px] text-zinc-500 dark:text-zinc-400">Discriminador activo</span>
             </div>
           </div>
 
-          <div className="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
-            <div className="flex items-center justify-between text-slate-400 text-xs">
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 p-4 rounded-xl shadow-xs">
+            <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs">
               <span>Tiempo Real (KDS)</span>
-              <RefreshCw className="w-4 h-4 text-amber-400" />
+              <RefreshCw className="w-4 h-4 text-amber-500" />
             </div>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-base font-semibold text-white">supabase_realtime</span>
-              <span className="text-xs text-amber-400">orders activas</span>
+              <span className="text-sm font-semibold text-zinc-950 dark:text-zinc-50">supabase_realtime</span>
+              <span className="text-[11px] text-zinc-500 dark:text-zinc-400">orders activas</span>
             </div>
           </div>
         </div>
@@ -226,125 +223,115 @@ export default function SuperadminPage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-white">Locales Gastronómicos Registrados</h2>
-              <p className="text-xs text-slate-400">
-                Selecciona un restaurante para acceder directamente a su carta comensal, KDS o panel
+              <h2 className="text-base font-semibold text-zinc-950 dark:text-zinc-100">Locales Gastronómicos Registrados</h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Selecciona un restaurante para acceder directamente a su carta, KDS o panel de pedidos
               </p>
             </div>
             <button
               onClick={fetchTenants}
-              className="text-xs text-slate-400 hover:text-white flex items-center gap-1 bg-slate-900 border border-slate-800 px-2.5 py-1.5 rounded-lg transition"
+              className="text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 flex items-center gap-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2.5 py-1.5 rounded-lg transition"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span>Actualizar lista</span>
+              <span>Actualizar</span>
             </button>
           </div>
 
           {loading ? (
-            <div className="text-center py-12 bg-slate-900/50 rounded-2xl border border-slate-800">
-              <RefreshCw className="w-6 h-6 animate-spin text-orange-500 mx-auto mb-2" />
-              <p className="text-sm text-slate-400">Cargando restaurantes desde Supabase...</p>
+            <div className="text-center py-12 bg-white dark:bg-[#121215] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
+              <RefreshCw className="w-5 h-5 animate-spin text-zinc-400 mx-auto mb-2" />
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">Cargando restaurantes desde Supabase...</p>
             </div>
           ) : tenants.length === 0 ? (
-            <div className="text-center py-12 bg-slate-900/50 rounded-2xl border border-slate-800">
-              <Store className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-              <p className="text-sm text-slate-300 font-medium">No hay restaurantes registrados aún</p>
-              <p className="text-xs text-slate-500 mt-1">
+            <div className="text-center py-12 bg-white dark:bg-[#121215] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
+              <Store className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
+              <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">No hay restaurantes registrados aún</p>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
                 Ejecuta el seed para cargar el restaurante demo inicial
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-3.5">
               {tenants.map((tenant) => (
                 <div
                   key={tenant.id}
-                  className="bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-2xl p-6 transition shadow-xl"
+                  className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-xl p-5 transition shadow-xs"
                 >
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                     {/* Info Básica */}
-                    <div className="space-y-2">
+                    <div className="space-y-1.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-orange-950/80 border border-orange-800/60 flex items-center justify-center text-orange-400 font-bold text-lg">
+                        <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-lg">
                           🍔
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-bold text-white">{tenant.name}</h3>
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 px-2 py-0.5 rounded-full">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <h3 className="text-sm font-semibold text-zinc-950 dark:text-zinc-100">{tenant.name}</h3>
+                            <span className="inline-flex items-center gap-1 text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50 px-2 py-0.5 rounded-md">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                               {tenant.isActive ? 'Activo' : 'Inactivo'}
                             </span>
                           </div>
-                          <p className="text-xs font-mono text-orange-400">
+                          <p className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
                             Slug: /{tenant.slug}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400 pt-1">
                         <span className="flex items-center gap-1">
-                          <Phone className="w-3.5 h-3.5 text-slate-500" />
+                          <Phone className="w-3 h-3 text-zinc-400" />
                           +{tenant.phone}
                         </span>
                         <span>•</span>
-                        <span>
-                          {tenant._count?.categories || 3} Categorías
-                        </span>
+                        <span>{tenant._count?.categories || 3} Categorías</span>
                         <span>•</span>
-                        <span>
-                          {tenant._count?.products || 4} Productos en catálogo
-                        </span>
+                        <span>{tenant._count?.products || 4} Productos</span>
                         <span>•</span>
-                        <span>
-                          {tenant._count?.users || 2} Cuentas staff asociadas
-                        </span>
+                        <span>{tenant._count?.users || 2} Cuentas Staff</span>
                       </div>
                     </div>
 
-                    {/* Botones de Acceso al Restaurante de Prueba */}
-                    <div className="flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
-                      {/* Botón 1: Ver Catálogo Comensal */}
+                    {/* Botones de Acceso al Restaurante */}
+                    <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0">
                       <Link
                         href={`/${tenant.slug}`}
                         target="_blank"
-                        className="flex items-center gap-1.5 bg-orange-600/90 hover:bg-orange-600 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition shadow-md shadow-orange-600/20"
+                        className="inline-flex items-center gap-1.5 bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 text-xs font-medium px-3 py-2 rounded-lg transition shadow-xs"
                       >
-                        <ShoppingBag className="w-4 h-4" />
-                        <span>Ver Carta Comensal</span>
-                        <ExternalLink className="w-3 h-3 opacity-70" />
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        <span>Carta Digital</span>
+                        <ExternalLink className="w-3 h-3 opacity-60" />
                       </Link>
 
-                      {/* Botón 2: Cocina KDS */}
                       <Link
                         href="/kds"
                         target="_blank"
-                        className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-slate-700 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition"
+                        className="inline-flex items-center gap-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 text-xs font-medium px-3 py-2 rounded-lg transition"
                       >
-                        <ChefHat className="w-4 h-4 text-amber-400" />
-                        <span>Pantalla Cocina KDS</span>
-                        <ExternalLink className="w-3 h-3 opacity-70" />
+                        <ChefHat className="w-3.5 h-3.5" />
+                        <span>Cocina KDS</span>
+                        <ExternalLink className="w-3 h-3 opacity-60" />
                       </Link>
 
-                      {/* Botón 3: Panel de Órdenes */}
                       <Link
                         href="/orders"
                         target="_blank"
-                        className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition"
+                        className="inline-flex items-center gap-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 text-xs font-medium px-3 py-2 rounded-lg transition"
                       >
-                        <Receipt className="w-4 h-4 text-sky-400" />
-                        <span>Panel de Pedidos</span>
-                        <ExternalLink className="w-3 h-3 opacity-70" />
+                        <Receipt className="w-3.5 h-3.5" />
+                        <span>Pedidos</span>
+                        <ExternalLink className="w-3 h-3 opacity-60" />
                       </Link>
 
-                      {/* Botón 4: Catálogo de Productos */}
                       <Link
                         href="/products"
                         target="_blank"
-                        className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition"
+                        className="inline-flex items-center gap-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-850 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 text-xs font-medium px-3 py-2 rounded-lg transition"
                       >
-                        <Layers className="w-4 h-4 text-slate-400" />
+                        <Layers className="w-3.5 h-3.5" />
                         <span>Catálogo</span>
-                        <ExternalLink className="w-3 h-3 opacity-70" />
+                        <ExternalLink className="w-3 h-3 opacity-60" />
                       </Link>
                     </div>
                   </div>
@@ -355,50 +342,50 @@ export default function SuperadminPage() {
         </div>
       </main>
 
-      {/* Modal Mockup: Crear Restaurante (Sin Backend, según requerimiento) */}
+      {/* Modal Mockup: Crear Restaurante (Sin Backend) */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-xl max-w-lg w-full p-6 shadow-xl relative space-y-4">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-orange-600/20 text-orange-400 flex items-center justify-center">
-                  <Building2 className="w-4 h-4" />
+                <div className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-zinc-100 flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
+                  <Building2 className="w-3.5 h-3.5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-white">Crear Nuevo Restaurante</h3>
-                  <p className="text-xs text-slate-400">Aprovisionamiento de nuevo inquilino multi-tenant</p>
+                  <h3 className="font-semibold text-sm text-zinc-950 dark:text-zinc-100">Crear Nuevo Restaurante</h3>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Aprovisionamiento de nuevo inquilino multi-tenant</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition"
+                className="text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 p-1 rounded-lg transition"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Banner Informativo (Sin Backend) */}
-            <div className="rounded-xl bg-amber-950/40 border border-amber-800/60 p-3.5 flex items-start gap-3 text-amber-200 text-xs">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            {/* Banner Informativo */}
+            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 p-3 flex items-start gap-2.5 text-amber-800 dark:text-amber-300 text-xs">
+              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div>
-                <strong className="font-semibold block text-amber-300">
-                  Módulo de Creación en Construcción (Sin Backend):
+                <strong className="font-medium block text-amber-900 dark:text-amber-200">
+                  Módulo de Creación Prototipo:
                 </strong>
-                Este formulario es una vista prototipo. La integración con la API de mutación y aislamiento multi-tenant está asignada para desarrollo backend en la siguiente fase.
+                Este formulario es una vista prototipo. La integración con la API de mutación y aislamiento multi-tenant está asignada para desarrollo posterior.
               </div>
             </div>
 
             {mockToast && (
-              <div className="rounded-xl bg-blue-950/60 border border-blue-800 p-3 text-blue-200 text-xs">
+              <div className="rounded-lg bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-3 text-zinc-800 dark:text-zinc-200 text-xs">
                 {mockToast}
               </div>
             )}
 
             {/* Formulario Prototipo */}
-            <form onSubmit={handleMockSubmit} className="space-y-4">
+            <form onSubmit={handleMockSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                   Nombre Comercial del Local
                 </label>
                 <input
@@ -415,29 +402,29 @@ export default function SuperadminPage() {
                         .replace(/[\s_-]+/g, '-')
                     );
                   }}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-950 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                   Slug URL (Identificador Único)
                 </label>
-                <div className="flex items-center bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-400">
+                <div className="flex items-center bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-500">
                   <span>fastfood.saas/</span>
                   <input
                     type="text"
                     placeholder="pizzeria-di-napoli"
                     value={mockSlug}
                     onChange={(e) => setMockSlug(e.target.value)}
-                    className="bg-transparent text-white focus:outline-none w-full pl-0.5"
+                    className="bg-transparent text-zinc-950 dark:text-zinc-100 focus:outline-none w-full pl-0.5"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                     WhatsApp para Pedidos
                   </label>
                   <input
@@ -445,12 +432,12 @@ export default function SuperadminPage() {
                     placeholder="56912345678"
                     value={mockPhone}
                     onChange={(e) => setMockPhone(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-950 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                     Email Store Admin
                   </label>
                   <input
@@ -458,22 +445,22 @@ export default function SuperadminPage() {
                     placeholder="admin@dinapoli.com"
                     value={mockEmail}
                     onChange={(e) => setMockEmail(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs text-zinc-950 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-800">
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-zinc-100 dark:border-zinc-800/80">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition"
+                  className="px-3 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 bg-zinc-100 dark:bg-zinc-900 rounded-lg transition"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-500 rounded-xl shadow-md transition"
+                  className="px-3.5 py-1.5 text-xs font-medium text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 rounded-lg shadow-xs transition"
                 >
                   Guardar Restaurante (Simular)
                 </button>

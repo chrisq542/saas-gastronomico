@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Lock, Mail, ArrowRight, ShieldCheck, UtensilsCrossed, AlertCircle, Loader2 } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -45,54 +46,55 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Glow Accents */}
-      <div className="absolute top-0 -left-40 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 -right-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">
-        {/* Brand Logo */}
-        <div className="flex justify-center">
-          <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <div className="w-12 h-12 rounded-2xl bg-orange-600 flex items-center justify-center text-white shadow-xl shadow-orange-600/30 group-hover:scale-105 transition">
-              <UtensilsCrossed className="w-6 h-6" />
-            </div>
-            <div className="text-left">
-              <span className="text-xl font-bold tracking-tight text-white block">
-                FastFood<span className="text-orange-500">SaaS</span>
-              </span>
-              <span className="text-xs text-slate-400 block -mt-1 font-medium">
-                Portal de Acceso Unificado
-              </span>
-            </div>
-          </Link>
-        </div>
-
-        <h2 className="mt-8 text-center text-2xl font-bold tracking-tight text-white">
-          Acceso a Plataforma Multi-Tenant
-        </h2>
-        <p className="mt-2 text-center text-sm text-slate-400">
-          Ingresa con tu cuenta Master (Superadmin) o credenciales de restaurante
-        </p>
+    <div className="min-h-screen bg-[#FFFFFF] dark:bg-[#09090B] text-[#09090B] dark:text-[#F4F4F5] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
+      {/* Top Bar with ThemeToggle */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">
-        <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800 py-8 px-6 shadow-2xl rounded-2xl sm:px-10">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md px-4 text-center space-y-4">
+        {/* Brand Logo */}
+        <Link href="/" className="inline-flex items-center gap-2.5 group">
+          <div className="w-10 h-10 rounded-lg bg-zinc-950 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-950 transition">
+            <UtensilsCrossed className="w-5 h-5" />
+          </div>
+          <div className="text-left">
+            <span className="text-base font-semibold tracking-tight text-zinc-950 dark:text-zinc-100 block">
+              FastFood SaaS
+            </span>
+            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 block -mt-0.5 font-normal">
+              Portal de Acceso
+            </span>
+          </div>
+        </Link>
+
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
+            Ingreso a la Plataforma
+          </h2>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            Cuenta Master Superadmin o credenciales de sucursal
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md px-4">
+        <div className="bg-white dark:bg-[#121215] border border-zinc-200/80 dark:border-zinc-800/80 py-8 px-6 shadow-xs rounded-xl sm:px-8 space-y-5">
           {errorMessage && (
-            <div className="mb-6 rounded-xl bg-red-950/50 border border-red-800/80 p-3.5 flex items-start gap-3 text-red-200 text-sm">
-              <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <div className="rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60 p-3 flex items-start gap-2.5 text-rose-700 dark:text-rose-300 text-xs">
+              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                 Correo Electrónico
               </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                  <Mail className="h-4 w-4" />
+              <div className="relative rounded-lg">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                  <Mail className="h-3.5 w-3.5" />
                 </div>
                 <input
                   type="email"
@@ -100,18 +102,18 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ej. chrisq542@gmail.com"
-                  className="block w-full pl-10 pr-3.5 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                  className="block w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-950 dark:text-zinc-100 placeholder-zinc-400 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                 Contraseña
               </label>
-              <div className="relative rounded-xl shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-                  <Lock className="h-4 w-4" />
+              <div className="relative rounded-lg">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
+                  <Lock className="h-3.5 w-3.5" />
                 </div>
                 <input
                   type="password"
@@ -119,7 +121,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="block w-full pl-10 pr-3.5 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                  className="block w-full pl-9 pr-3 py-2 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-950 dark:text-zinc-100 placeholder-zinc-400 text-xs focus:outline-none focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 transition"
                 />
               </div>
             </div>
@@ -127,41 +129,41 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-lg shadow-orange-600/20 text-sm font-semibold text-white bg-orange-600 hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-orange-500 disabled:opacity-60 transition"
+              className="w-full flex justify-center items-center gap-2 py-2.5 px-4 rounded-lg shadow-xs text-xs font-medium text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 focus:outline-none disabled:opacity-60 transition"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Verificando credenciales...</span>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Verificando...</span>
                 </>
               ) : (
                 <>
                   <span>Ingresar al Sistema</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3.5 h-3.5 opacity-70" />
                 </>
               )}
             </button>
           </form>
 
           {/* Quick Fill Shortcut for Master Devs (Christopher & Andrew) */}
-          <div className="mt-6 pt-6 border-t border-slate-800 text-center">
-            <p className="text-xs text-slate-400 mb-2">Acceso Rápido Cuenta Master Dev:</p>
+          <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/80 text-center space-y-2">
+            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Acceso Rápido Master Dev:</p>
             <button
               type="button"
               onClick={handleQuickMasterFill}
-              className="inline-flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 bg-orange-950/40 border border-orange-800/40 px-3 py-1.5 rounded-lg transition"
+              className="inline-flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-zinc-100 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-md transition"
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
               <span>Autocompletar (chrisq542@gmail.com)</span>
             </button>
           </div>
         </div>
 
         {/* Back Link */}
-        <div className="text-center mt-6">
+        <div className="text-center mt-5">
           <Link
             href="/"
-            className="text-xs text-slate-400 hover:text-white transition font-medium"
+            className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 transition font-normal"
           >
             ← Volver a la página principal
           </Link>
