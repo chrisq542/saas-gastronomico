@@ -8,10 +8,10 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum OrderType {
-  DELIVERY
-  PICKUP
-  DINE_IN
+enum Role {
+  SUPERADMIN
+  STORE_ADMIN
+  KITCHEN
 }
 
 enum OrderStatus {
@@ -22,6 +22,12 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum DeliveryType {
+  DELIVERY
+  PICKUP
+  DINE_IN
+}
+
 enum PaymentMethod {
   CASH
   CARD_ON_DELIVERY
@@ -29,25 +35,86 @@ enum PaymentMethod {
   ONLINE
 }
 
-enum PaymentStatus {
-  PENDING
-  PAID
-  REFUNDED
+model Restaurant {
+  id        String   @id @default(uuid())
+  slug      String   @unique @db.VarChar(100)
+  name      String   @db.VarChar(150)
+  phone     String   @db.VarChar(20)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  users      User[]
+  categories Category[]
+  products   Product[]
+  customers  Customer[]
+  orders     Order[]
+
+  @@map("restaurants")
+}
+
+model User {
+  id           String      @id @default(uuid())
+  restaurantId String?     @map("restaurant_id")
+  email        String      @unique @db.VarChar(255)
+  passwordHash String      @map("password_hash")
+  role         Role        @default(STORE_ADMIN)
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId], name: "idx_users_restaurant_id")
+  @@map("users")
+}
+
+model Category {
+  id           String    @id @default(uuid())
+  restaurantId String    @map("restaurant_id")
+  name         String    @db.VarChar(100)
+  sortOrder    Int       @default(0) @map("sort_order")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products     Product[]
+
+  @@index([restaurantId], name: "idx_categories_restaurant_id")
+  @@map("categories")
+}
+
+model Product {
+  id           String      @id @default(uuid())
+  restaurantId String      @map("restaurant_id")
+  categoryId   String      @map("category_id")
+  name         String      @db.VarChar(150)
+  description  String?     @db.Text
+  price        Decimal     @db.Decimal(10, 2)
+  imageUrl     String?     @map("image_url") @db.Text
+  isActive     Boolean     @default(true) @map("is_active")
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  category     Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  orderItems   OrderItem[]
+
+  @@index([restaurantId], name: "idx_products_restaurant_id")
+  @@index([categoryId], name: "idx_products_category_id")
+  @@index([isActive], name: "idx_products_is_active")
+  @@map("products")
 }
 
 model Customer {
-  id        String    @id @default(uuid())
-  name      String
-  phone     String    @db.VarChar(20)
-  email     String?   @db.VarChar(255)
-  rut       String?   @db.VarChar(20) // Identificador tributario (RUT/DNI)
-  notes     String?   @db.Text
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
+  id           String     @id @default(uuid())
+  restaurantId String     @map("restaurant_id")
+  phone        String     @db.VarChar(20)
+  rut          String?    @db.VarChar(20)
+  name         String     @db.VarChar(150)
+  createdAt    DateTime   @default(now()) @map("created_at")
 
-  addresses Address[]
-  orders    Order[]
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  addresses    Address[]
+  orders       Order[]
 
+  @@unique([restaurantId, phone], name: "uq_customer_restaurant_phone")
+  @@index([restaurantId], name: "idx_customers_restaurant_id")
   @@index([phone], name: "idx_customers_phone")
   @@index([rut], name: "idx_customers_rut")
   @@map("customers")
@@ -56,100 +123,56 @@ model Customer {
 model Address {
   id         String   @id @default(uuid())
   customerId String   @map("customer_id")
-  street     String   @db.VarChar(255)
-  number     String   @db.VarChar(50)
-  apartment  String?  @db.VarChar(50)
-  city       String   @default("Santiago") @db.VarChar(100)
+  address    String   @db.VarChar(255)
   reference  String?  @db.VarChar(255)
-  isDefault  Boolean  @default(false) @map("is_default")
+  commune    String   @default("Santiago") @db.VarChar(100)
   createdAt  DateTime @default(now()) @map("created_at")
 
-  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  orders   Order[]
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   @@index([customerId], name: "idx_addresses_customer_id")
   @@map("addresses")
 }
 
-model Category {
-  id          String    @id @default(uuid())
-  name        String    @db.VarChar(100)
-  slug        String    @unique @db.VarChar(100)
-  description String?   @db.Text
-  sortOrder   Int       @default(0) @map("sort_order")
-  isActive    Boolean   @default(true) @map("is_active")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-
-  products Product[]
-
-  @@index([isActive, sortOrder], name: "idx_categories_active_order")
-  @@map("categories")
-}
-
-model Product {
-  id              String   @id @default(uuid())
-  categoryId      String   @map("category_id")
-  name            String   @db.VarChar(150)
-  description     String?  @db.Text
-  price           Decimal  @db.Decimal(10, 2)
-  imageUrl        String?  @map("image_url") @db.Text
-  isAvailable     Boolean  @default(true) @map("is_available")
-  preparationTime Int?     @map("preparation_time") // Minutos aproximados
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  category   Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  orderItems OrderItem[]
-
-  @@index([categoryId], name: "idx_products_category_id")
-  @@index([isAvailable], name: "idx_products_is_available")
-  @@map("products")
-}
-
 model Order {
   id            String        @id @default(uuid())
-  orderNumber   Int           @default(autoincrement()) @map("order_number")
+  restaurantId  String        @map("restaurant_id")
   customerId    String        @map("customer_id")
-  addressId     String?       @map("address_id")
-  orderType     OrderType     @default(DELIVERY) @map("order_type")
+  orderNumber   Int           @default(autoincrement()) @map("order_number")
   status        OrderStatus   @default(PENDING)
+  deliveryType  DeliveryType  @default(DELIVERY) @map("delivery_type")
   paymentMethod PaymentMethod @default(CASH) @map("payment_method")
-  paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
   subtotal      Decimal       @db.Decimal(10, 2)
   deliveryFee   Decimal       @default(0.00) @map("delivery_fee") @db.Decimal(10, 2)
-  discount      Decimal       @default(0.00) @db.Decimal(10, 2)
   total         Decimal       @db.Decimal(10, 2)
   notes         String?       @db.Text
-  kitchenNotes  String?       @map("kitchen_notes") @db.Text
   createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
 
-  customer Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  address  Address?    @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  items    OrderItem[]
+  restaurant    Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  items         OrderItem[]
 
-  @@index([orderNumber], name: "idx_orders_order_number")
+  @@index([restaurantId], name: "idx_orders_restaurant_id")
   @@index([customerId], name: "idx_orders_customer_id")
   @@index([status], name: "idx_orders_status")
+  @@index([orderNumber], name: "idx_orders_order_number")
   @@index([createdAt], name: "idx_orders_created_at")
   @@map("orders")
 }
 
 model OrderItem {
-  id          String   @id @default(uuid())
-  orderId     String   @map("order_id")
-  productId   String   @map("product_id")
-  productName String   @map("product_name") @db.VarChar(150)
-  unitPrice   Decimal  @map("unit_price") @db.Decimal(10, 2)
-  quantity    Int      @default(1)
-  subtotal    Decimal  @db.Decimal(10, 2)
-  notes       String?  @db.Text // Modificaciones: "Sin tomate", "Extra queso"
-  createdAt   DateTime @default(now()) @map("created_at")
+  id        String   @id @default(uuid())
+  orderId   String   @map("order_id")
+  productId String   @map("product_id")
+  quantity  Int      @default(1)
+  unitPrice Decimal  @map("unit_price") @db.Decimal(10, 2)
+  notes     String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
 
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@index([orderId], name: "idx_order_items_order_id")
+  @@index([productId], name: "idx_order_items_product_id")
   @@map("order_items")
 }
