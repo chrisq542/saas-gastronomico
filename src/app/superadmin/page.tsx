@@ -409,130 +409,169 @@ export default function SuperadminPage() {
             <p className="font-semibold text-sm">No hay restaurantes registrados</p>
             <p className="text-xs text-zinc-500 mt-1">Haz clic en "Nuevo Restaurante" para aprovisionar el primero.</p>
           </div>
+        {/* Lista de Tenants en formato Tabla / Lista */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <RefreshCw className="w-6 h-6 animate-spin text-emerald-500" />
+          </div>
+        ) : tenants.length === 0 ? (
+          <div className="text-center py-16 bg-white dark:bg-[#121215] rounded-2xl border border-zinc-200 dark:border-zinc-800">
+            <Store className="w-10 h-10 mx-auto text-zinc-400 mb-3" />
+            <p className="font-semibold text-sm">No hay restaurantes registrados</p>
+            <p className="text-xs text-zinc-500 mt-1">Haz clic en "Nuevo Restaurante" para aprovisionar el primero.</p>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tenants.map((tenant) => (
-              <div
-                key={tenant.id}
-                className="flex flex-col justify-between rounded-2xl bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 p-6 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 transition"
-              >
-                <div className="space-y-4">
-                  {/* Top: Logo & Status */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      {tenant.logoUrl ? (
-                        <img
-                          src={tenant.logoUrl}
-                          alt={tenant.name}
-                          className="w-12 h-12 rounded-xl object-cover border border-zinc-200 dark:border-zinc-700 flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-lg flex-shrink-0">
-                          {tenant.name.charAt(0)}
+          <div className="overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#121215] shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/40 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <th className="py-3.5 px-4">Restaurante / Marca</th>
+                    <th className="py-3.5 px-4">RUT & Contacto</th>
+                    <th className="py-3.5 px-4">Ubicación & Dominio</th>
+                    <th className="py-3.5 px-4 text-center">Métricas</th>
+                    <th className="py-3.5 px-4 text-center">Estado</th>
+                    <th className="py-3.5 px-4 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
+                  {tenants.map((tenant) => (
+                    <tr
+                      key={tenant.id}
+                      className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/50 transition-colors"
+                    >
+                      {/* Nombre & Logo */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          {tenant.logoUrl ? (
+                            <img
+                              src={tenant.logoUrl}
+                              alt={tenant.name}
+                              className="w-10 h-10 rounded-xl object-cover border border-zinc-200 dark:border-zinc-700 flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                              {tenant.name.charAt(0)}
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-bold text-sm text-zinc-950 dark:text-zinc-50 leading-tight">
+                              {tenant.name}
+                            </p>
+                            <p className="text-[11px] font-mono text-zinc-500 mt-0.5">/{tenant.slug}</p>
+                          </div>
                         </div>
-                      )}
-                      <div>
-                        <h3 className="font-bold text-base tracking-tight leading-snug">{tenant.name}</h3>
-                        <p className="text-xs font-mono text-zinc-500">/{tenant.slug}</p>
-                      </div>
-                    </div>
+                      </td>
 
-                    <button
-                      onClick={() => handleToggleStatus(tenant.id, tenant.isActive)}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition ${
-                        tenant.isActive
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                          : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
-                      }`}
-                    >
-                      {tenant.isActive ? 'Activo' : 'Inactivo'}
-                    </button>
-                  </div>
+                      {/* RUT & Contacto */}
+                      <td className="py-3.5 px-4">
+                        <div className="space-y-0.5">
+                          {tenant.rut ? (
+                            <p className="font-mono text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                              {tenant.rut}
+                            </p>
+                          ) : (
+                            <p className="text-zinc-400 text-[11px] italic">Sin RUT</p>
+                          )}
+                          <p className="text-zinc-500 flex items-center gap-1 text-[11px]">
+                            <Phone className="w-3 h-3 text-zinc-400" />
+                            <span>{tenant.phone}</span>
+                          </p>
+                        </div>
+                      </td>
 
-                  {/* Info Detallada */}
-                  <div className="space-y-1.5 text-xs text-zinc-600 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                    {tenant.rut && (
-                      <p className="flex items-center gap-2">
-                        <span className="font-semibold text-zinc-500">RUT:</span>
-                        <span className="font-mono">{tenant.rut}</span>
-                      </p>
-                    )}
-                    <p className="flex items-center gap-2">
-                      <Phone className="w-3.5 h-3.5 text-zinc-400" />
-                      <span>{tenant.phone}</span>
-                    </p>
-                    {tenant.address && (
-                      <p className="flex items-center gap-2 text-zinc-500">
-                        <span>📍 {tenant.address}</span>
-                      </p>
-                    )}
-                    {tenant.customDomain && (
-                      <p className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-mono">
-                        <Globe className="w-3.5 h-3.5" />
-                        <span>{tenant.customDomain}</span>
-                      </p>
-                    )}
-                  </div>
+                      {/* Ubicación & Dominio */}
+                      <td className="py-3.5 px-4 max-w-xs">
+                        <div className="space-y-0.5 truncate">
+                          {tenant.address ? (
+                            <p className="text-zinc-700 dark:text-zinc-300 truncate">
+                              📍 {tenant.address}
+                            </p>
+                          ) : (
+                            <p className="text-zinc-400 text-[11px] italic">Sin dirección</p>
+                          )}
+                          {tenant.customDomain && (
+                            <p className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px] flex items-center gap-1 truncate">
+                              <Globe className="w-3 h-3 flex-shrink-0" />
+                              <span>{tenant.customDomain}</span>
+                            </p>
+                          )}
+                        </div>
+                      </td>
 
-                  {/* Contadores */}
-                  <div className="grid grid-cols-4 gap-2 py-2 px-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800/60 text-center text-xs">
-                    <div>
-                      <span className="block font-bold text-zinc-900 dark:text-zinc-100">{tenant._count?.products || 0}</span>
-                      <span className="text-[10px] text-zinc-500">Prods</span>
-                    </div>
-                    <div>
-                      <span className="block font-bold text-zinc-900 dark:text-zinc-100">{tenant._count?.categories || 0}</span>
-                      <span className="text-[10px] text-zinc-500">Cats</span>
-                    </div>
-                    <div>
-                      <span className="block font-bold text-zinc-900 dark:text-zinc-100">{tenant._count?.orders || 0}</span>
-                      <span className="text-[10px] text-zinc-500">Pedidos</span>
-                    </div>
-                    <div>
-                      <span className="block font-bold text-zinc-900 dark:text-zinc-100">{tenant._count?.users || 0}</span>
-                      <span className="text-[10px] text-zinc-500">Users</span>
-                    </div>
-                  </div>
-                </div>
+                      {/* Métricas */}
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center justify-center gap-2 text-[11px] font-mono">
+                          <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300" title="Productos">
+                            📦 {tenant._count?.products || 0}
+                          </span>
+                          <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300" title="Pedidos">
+                            🛒 {tenant._count?.orders || 0}
+                          </span>
+                          <span className="px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300" title="Usuarios">
+                            👥 {tenant._count?.users || 0}
+                          </span>
+                        </div>
+                      </td>
 
-                {/* Acciones de Tarjeta */}
-                <div className="pt-4 mt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => openEditModal(tenant)}
-                      className="p-2 rounded-lg text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                      title="Editar Restaurante"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => openUsersModal(tenant)}
-                      className="p-2 rounded-lg text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center gap-1 text-xs font-medium"
-                      title="Gestionar Usuarios"
-                    >
-                      <Users className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTenant(tenant)}
-                      className="p-2 rounded-lg text-rose-500 hover:bg-rose-500/10 transition"
-                      title="Eliminar Restaurante"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                      {/* Estado */}
+                      <td className="py-3.5 px-4 text-center">
+                        <button
+                          onClick={() => handleToggleStatus(tenant.id, tenant.isActive)}
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer ${
+                            tenant.isActive
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
+                              : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20'
+                          }`}
+                        >
+                          {tenant.isActive ? 'Activo' : 'Inactivo'}
+                        </button>
+                      </td>
 
-                  <a
-                    href={`/${tenant.slug}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
-                  >
-                    <span>Ver Carta</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-            ))}
+                      {/* Acciones */}
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => openEditModal(tenant)}
+                            className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                            title="Editar Restaurante"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={() => openUsersModal(tenant)}
+                            className="px-2 py-1 rounded-lg text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center gap-1 text-[11px] font-medium"
+                            title="Gestionar Usuarios"
+                          >
+                            <Users className="w-3.5 h-3.5" />
+                            <span>Users</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteTenant(tenant)}
+                            className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 transition"
+                            title="Eliminar Restaurante"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+
+                          <a
+                            href={`/${tenant.slug}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition"
+                            title="Abrir Carta Digital"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>
