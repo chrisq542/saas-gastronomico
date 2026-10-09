@@ -58,9 +58,9 @@ jobs:
             echo "📦 Instalando dependencias..."
             npm ci
 
-            echo "🗄️ Generando Prisma Client y aplicando migraciones..."
+            echo "🗄️ Generando Prisma Client y sincronizando base de datos..."
             npx prisma generate
-            npx prisma migrate deploy
+            npx prisma db push --skip-generate
 
             echo "🏗️ Compilando Next.js..."
             npm run build
