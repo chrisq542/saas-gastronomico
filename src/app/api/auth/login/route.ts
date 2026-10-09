@@ -67,11 +67,14 @@ export async function POST(req: NextRequest) {
       restaurantName: user.restaurant?.name || null,
     };
 
+    const isHttps =
+      req.headers.get('x-forwarded-proto') === 'https' || req.nextUrl.protocol === 'https:';
+
     // Guardar cookie de sesión
     const cookieStore = cookies();
     cookieStore.set('auth_session', JSON.stringify(sessionPayload), {
       httpOnly: false, // Accesible por cliente para hidratación UI
-      secure: process.env.NODE_ENV === 'production',
+      secure: isHttps,
       sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 días
