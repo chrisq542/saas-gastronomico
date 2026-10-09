@@ -13,6 +13,9 @@ interface TenantCatalogClientProps {
     name: string;
     slug: string;
     phone: string;
+    rut?: string | null;
+    logoUrl?: string | null;
+    address?: string | null;
     customDomain?: string | null;
   };
   initialCategories: (Category & { products: Product[] })[];
@@ -52,17 +55,43 @@ export default function TenantCatalogClient({
     <div className="space-y-8 pb-24">
       {/* Hero Promocional del Restaurante */}
       <section className="relative overflow-hidden rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50 dark:bg-[#121215] p-6 sm:p-8 shadow-xs mx-3 mt-4">
-        <div className="relative z-10 max-w-xl space-y-2">
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            <Sparkles className="w-3.5 h-3.5 text-zinc-500" />
-            <span>Carta Digital Online • {restaurant.name}</span>
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
-            Pide en 3 clics sin registro
-          </h2>
-          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            Selecciona tus productos favoritos de {restaurant.name}, dinos a dónde enviarlo y confirma directamente por WhatsApp.
-          </p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 relative z-10">
+          {restaurant.logoUrl ? (
+            <img
+              src={restaurant.logoUrl}
+              alt={restaurant.name}
+              className="w-20 h-20 rounded-2xl object-cover border border-zinc-200 dark:border-zinc-700 shadow-md flex-shrink-0"
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-2xl bg-zinc-950 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-950 font-bold text-2xl shadow-md flex-shrink-0">
+              {restaurant.name.charAt(0)}
+            </div>
+          )}
+
+          <div className="space-y-1.5 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Carta Digital Online</span>
+              </span>
+              {restaurant.rut && (
+                <span className="text-[11px] px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-mono">
+                  RUT: {restaurant.rut}
+                </span>
+              )}
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
+              {restaurant.name}
+            </h2>
+            {restaurant.address && (
+              <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
+                📍 {restaurant.address}
+              </p>
+            )}
+            <p className="text-xs text-zinc-500 dark:text-zinc-500 leading-relaxed">
+              Selecciona tus productos favoritos, dinos a dónde enviarlo y confirma directamente por WhatsApp.
+            </p>
+          </div>
         </div>
       </section>
 
