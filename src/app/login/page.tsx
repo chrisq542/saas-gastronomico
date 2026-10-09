@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Lock, Mail, ArrowRight, ShieldCheck, UtensilsCrossed, AlertCircle, Loader2 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { ROUTES } from '@/constants';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function LoginPage() {
       }
 
       // Redirección exitosa según rol
-      router.push(data.redirectUrl || '/superadmin');
+      router.push(data.redirectUrl || ROUTES.SUPERADMIN.ROOT);
     } catch (err: any) {
       setErrorMessage(err.message || 'Error al autenticar');
     } finally {

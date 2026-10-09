@@ -3,8 +3,10 @@ export const ROUTES = {
   LOGIN: '/login',
   SUPERADMIN: {
     ROOT: '/tenants',
-    TENANTS: '/tenants/',
+    TENANTS: '/tenants',
     TENANT_DETAIL: (id: string) => `/tenants/${id}`,
+    TENANT_KDS: (id: string) => `/kds?restaurantId=${id}`,
+    TENANT_ORDERS: (id: string) => `/orders?restaurantId=${id}`,
   },
   STORE: {
     ORDERS: '/orders',

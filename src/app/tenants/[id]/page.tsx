@@ -4,36 +4,23 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Building2,
   ArrowLeft,
   Users,
   CreditCard,
   Info,
-  Shield,
-  Phone,
-  Globe,
-  Edit,
   Trash2,
   UserPlus,
-  Calendar,
   CheckCircle2,
   AlertTriangle,
   RefreshCw,
-  Clock,
-  DollarSign,
-  Receipt,
-  Sparkles,
   ExternalLink,
   FolderPlus,
   UtensilsCrossed,
-  Plus,
   ToggleLeft,
   ToggleRight,
-  Search,
-  Tag,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { ROOT_URL } from '@/utils/contantes';
+import { ROOT_URL, ROUTES, ROLES } from '@/constants';
 
 interface TenantUser {
   id: string;
@@ -183,11 +170,11 @@ export default function TenantDetailPage() {
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((res) => {
-        if (!res.authenticated || res.user?.role !== 'SUPERADMIN') {
-          router.push('/login');
+        if (!res.authenticated || res.user?.role !== ROLES.SUPERADMIN) {
+          router.push(ROUTES.LOGIN);
         }
       })
-      .catch(() => router.push('/login'));
+      .catch(() => router.push(ROUTES.LOGIN));
 
     // 2. Cargar detalle del tenant y sus sub-mantenedores
     fetchTenantDetail();
@@ -567,8 +554,8 @@ export default function TenantDetailPage() {
         <div className="fixed top-5 right-5 z-50 animate-in fade-in slide-in-from-top-4">
           <div
             className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border text-sm font-medium ${toastMessage.type === 'success'
-                ? 'bg-emerald-950/90 text-emerald-200 border-emerald-800'
-                : 'bg-rose-950/90 text-rose-200 border-rose-800'
+              ? 'bg-emerald-950/90 text-emerald-200 border-emerald-800'
+              : 'bg-rose-950/90 text-rose-200 border-rose-800'
               }`}
           >
             {toastMessage.type === 'success' ? (
@@ -586,9 +573,9 @@ export default function TenantDetailPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              href="/superadmin"
+              href={ROUTES.SUPERADMIN.ROOT}
               className="p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-              title="Volver al panel Superadmin"
+              title="Volver al directorio de Restaurantes"
             >
               <ArrowLeft className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
             </Link>
@@ -609,8 +596,8 @@ export default function TenantDetailPage() {
                   <h1 className="font-bold text-lg tracking-tight">{tenant.name}</h1>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${tenant.isActive
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                        : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
                       }`}
                   >
                     {tenant.isActive ? 'ACTIVO' : 'INACTIVO'}
@@ -653,8 +640,8 @@ export default function TenantDetailPage() {
               <button
                 onClick={() => setActiveTab('info')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${activeTab === 'info'
-                    ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                  ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
                   }`}
               >
                 <Info className="w-4 h-4" />
@@ -664,8 +651,8 @@ export default function TenantDetailPage() {
               <button
                 onClick={() => setActiveTab('categories')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${activeTab === 'categories'
-                    ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                  ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -680,8 +667,8 @@ export default function TenantDetailPage() {
               <button
                 onClick={() => setActiveTab('products')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${activeTab === 'products'
-                    ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                  ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -696,8 +683,8 @@ export default function TenantDetailPage() {
               <button
                 onClick={() => setActiveTab('users')}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${activeTab === 'users'
-                    ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                  ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -712,8 +699,8 @@ export default function TenantDetailPage() {
               <button
                 onClick={() => setActiveTab('subscription')}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${activeTab === 'subscription'
-                    ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
-                    : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                  ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
                   }`}
               >
                 <CreditCard className="w-4 h-4" />
@@ -945,8 +932,8 @@ export default function TenantDetailPage() {
                             <button
                               onClick={() => handleToggleCategoryActive(cat)}
                               className={`px-3 py-1.5 rounded-xl text-xs font-medium border flex items-center gap-1.5 transition ${cat.isActive
-                                  ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20'
-                                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700'
+                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700'
                                 }`}
                             >
                               {cat.isActive ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
@@ -1102,8 +1089,8 @@ export default function TenantDetailPage() {
                             <button
                               onClick={() => handleToggleProductActive(prod)}
                               className={`px-3 py-1.5 rounded-xl text-xs font-medium border flex items-center gap-1.5 transition ${prod.isActive
-                                  ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20'
-                                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700'
+                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700'
                                 }`}
                             >
                               {prod.isActive ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}

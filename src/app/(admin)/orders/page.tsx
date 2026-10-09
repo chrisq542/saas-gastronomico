@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Order, OrderStatus } from '@/types';
 import { formatCurrency, formatDateTime, formatPhoneNumber, formatRut } from '@/lib/utils/formatters';
 import { ThermalTicket80mm } from '@/components/tickets/ThermalTicket80mm';
@@ -18,6 +19,9 @@ import {
 } from 'lucide-react';
 
 export default function OrdersAdminPage() {
+  const searchParams = useSearchParams();
+  const restaurantId = searchParams.get('restaurantId');
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -28,6 +32,7 @@ export default function OrdersAdminPage() {
     setLoading(true);
     try {
       let url = '/api/orders?limit=100';
+      if (restaurantId) url += `&restaurantId=${encodeURIComponent(restaurantId)}`;
       if (statusFilter !== 'ALL') url += `&status=${statusFilter}`;
       if (searchTerm.trim()) url += `&phone=${encodeURIComponent(searchTerm)}`;
 

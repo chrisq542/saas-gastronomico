@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { ROUTES, ROLES } from '@/constants';
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,13 +50,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Determinar URL de redirección según el rol
-    let redirectUrl = '/superadmin';
-    if (user.role === 'SUPERADMIN') {
-      redirectUrl = '/superadmin';
-    } else if (user.role === 'STORE_ADMIN') {
-      redirectUrl = user.restaurant?.slug ? `/${user.restaurant.slug}/admin` : '/orders';
-    } else if (user.role === 'KITCHEN') {
-      redirectUrl = user.restaurant?.slug ? `/${user.restaurant.slug}/kds` : '/kds';
+    let redirectUrl: string = ROUTES.SUPERADMIN.ROOT;
+    if (user.role === ROLES.SUPERADMIN) {
+      redirectUrl = ROUTES.SUPERADMIN.ROOT;
+    } else if (user.role === ROLES.STORE_ADMIN) {
+      redirectUrl = user.restaurant?.slug ? ROUTES.TENANT.ADMIN(user.restaurant.slug) : ROUTES.STORE.ORDERS;
+    } else if (user.role === ROLES.KITCHEN) {
+      redirectUrl = user.restaurant?.slug ? ROUTES.TENANT.KDS(user.restaurant.slug) : ROUTES.STORE.KDS;
     }
 
     const sessionPayload = {

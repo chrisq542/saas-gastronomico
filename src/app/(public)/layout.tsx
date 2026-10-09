@@ -7,7 +7,7 @@ import { useCart } from '@/context/CartContext';
 import { ShoppingBag, UtensilsCrossed, PhoneCall, ShieldCheck, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { ROOT_URL } from '@/utils/contantes';
+import { ROOT_URL, ROUTES, ROLES } from '@/constants';
 
 export default function PublicLayout({ children }: { children: React.ReactNode; }) {
   const pathname = usePathname();
@@ -69,11 +69,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
 
             {/* Enlaces Comercial Plataforma */}
             <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-zinc-600 dark:text-zinc-400 tracking-tight">
-              <Link href="/login" className="hover:text-zinc-950 dark:hover:text-zinc-100 transition">
+              <Link href={ROUTES.LOGIN} className="hover:text-zinc-950 dark:hover:text-zinc-100 transition">
                 Acceso Tiendas
               </Link>
-              {userSession?.role === 'SUPERADMIN' && (
-                <Link href="/superadmin" className="hover:text-zinc-950 dark:hover:text-zinc-100 transition">
+              {userSession?.role === ROLES.SUPERADMIN && (
+                <Link href={ROUTES.SUPERADMIN.ROOT} className="hover:text-zinc-950 dark:hover:text-zinc-100 transition">
                   Master Panel
                 </Link>
               )}
@@ -83,7 +83,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
             <div className="flex items-center gap-3">
               <ThemeToggle />
               <Link
-                href={userSession ? (userSession.role === 'SUPERADMIN' ? '/superadmin' : '/orders') : '/login'}
+                href={userSession ? (userSession.role === ROLES.SUPERADMIN ? ROUTES.SUPERADMIN.ROOT : ROUTES.STORE.ORDERS) : ROUTES.LOGIN}
                 className="inline-flex items-center gap-1.5 bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 px-3.5 py-1.5 rounded-lg text-xs font-medium tracking-tight transition shadow-xs"
               >
                 <ShieldCheck className="w-3.5 h-3.5" />
@@ -112,13 +112,13 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
               </p>
             </div>
             <div className="flex items-center gap-4 text-zinc-500 dark:text-zinc-400">
-              <Link href="/login" className="hover:text-zinc-950 dark:hover:text-zinc-100 transition">
+              <Link href={ROUTES.LOGIN} className="hover:text-zinc-950 dark:hover:text-zinc-100 transition">
                 Portal Staff
               </Link>
-              {userSession?.role === 'SUPERADMIN' && (
+              {userSession?.role === ROLES.SUPERADMIN && (
                 <>
                   <span>•</span>
-                  <Link href="/superadmin" className="hover:text-zinc-950 dark:hover:text-zinc-100 transition">
+                  <Link href={ROUTES.SUPERADMIN.ROOT} className="hover:text-zinc-950 dark:hover:text-zinc-100 transition">
                     Consola Master
                   </Link>
                 </>
@@ -132,11 +132,11 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
 
   // 2. Layout Limpio por Defecto para Vista de Cliente / Comensales (Subdominios o /[slug])
   const segments = pathname.split('/').filter(Boolean);
-  const currentSlug = segments[0] && !['checkout', 'login', 'superadmin', 'kds', 'orders'].includes(segments[0])
+  const currentSlug = segments[0] && !['checkout', 'login', 'superadmin', 'tenants', 'kds', 'orders'].includes(segments[0])
     ? segments[0]
     : '';
 
-  const tenantHomeLink = currentSlug ? `/${currentSlug}` : '/';
+  const tenantHomeLink = currentSlug ? `/${currentSlug}` : ROUTES.HOME;
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FFFFFF] dark:bg-[#09090B] text-[#09090B] dark:text-[#F4F4F5]">
@@ -161,7 +161,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
             {/* Si el usuario tiene sesión iniciada (Admin/Staff), se muestra acceso a su panel */}
             {userSession && (
               <Link
-                href={userSession.role === 'SUPERADMIN' ? '/superadmin' : '/orders'}
+                href={userSession.role === ROLES.SUPERADMIN ? ROUTES.SUPERADMIN.ROOT : ROUTES.STORE.ORDERS}
                 className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold hover:underline"
               >
                 <ShieldCheck className="w-3 h-3" />

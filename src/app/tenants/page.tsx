@@ -32,7 +32,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
-import { ROOT_URL } from '@/utils/contantes';
+import { ROOT_URL, ROUTES, ROLES } from '@/constants';
 
 interface TenantUser {
   id: string;
@@ -99,14 +99,14 @@ export default function SuperadminPage() {
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((res) => {
-        if (!res.authenticated || res.user?.role !== 'SUPERADMIN') {
-          router.push('/login');
+        if (!res.authenticated || res.user?.role !== ROLES.SUPERADMIN) {
+          router.push(ROUTES.LOGIN);
           return;
         }
         setCurrentUser(res.user);
       })
       .catch(() => {
-        router.push('/login');
+        router.push(ROUTES.LOGIN);
       });
 
     fetchTenants();
@@ -134,7 +134,7 @@ export default function SuperadminPage() {
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
+    router.push(ROUTES.LOGIN);
   };
 
   const openCreateModal = () => {
@@ -425,7 +425,7 @@ export default function SuperadminPage() {
                           )}
                           <div>
                             <Link
-                              href={`/tenants/${tenant.id}`}
+                              href={ROUTES.SUPERADMIN.TENANT_DETAIL(tenant.id)}
                               className="font-bold text-sm text-zinc-950 dark:text-zinc-50 leading-tight hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition"
                             >
                               {tenant.name}
@@ -525,11 +525,11 @@ export default function SuperadminPage() {
                       </td>
 
                       {/* Acciones */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1 flex-col ">
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
                           <Link
-                            href={`/tenants/${tenant.id}`}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-sm"
+                            href={ROUTES.SUPERADMIN.TENANT_DETAIL(tenant.id)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-xs"
                             title="Administrar Restaurante"
                           >
                             <Edit className="w-3.5 h-3.5 shrink-0" />
@@ -537,22 +537,15 @@ export default function SuperadminPage() {
                           </Link>
 
                           <Link
-                            href={`/tenants/${tenant.id}`}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-sm"
-                            title="Administrar Restaurante"
+                            href={ROUTES.SUPERADMIN.TENANT_KDS(tenant.id)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-950 dark:hover:text-emerald-200 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors shadow-xs"
+                            title="Ver Tablero de Cocina / KDS del Restaurante"
                           >
                             <Eye className="w-3.5 h-3.5 shrink-0" />
                             <span>Ver tablero</span>
                           </Link>
-                          {/* 
-                          <button
-                            onClick={() => handleDeleteTenant(tenant)}
-                            className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 transition"
-                            title="Eliminar Restaurante"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button> 
-                          */}
                         </div>
                       </td>
                     </tr>

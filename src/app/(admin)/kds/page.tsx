@@ -3,6 +3,8 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Order, OrderStatus } from '@/types';
 import { createClient } from '@/lib/supabase/client';
 import { getElapsedMinutes, formatTimeSimple } from '@/lib/utils/formatters';
@@ -19,9 +21,14 @@ import {
   Volume2,
   VolumeX,
   AlertTriangle,
+  Building2,
+  X,
 } from 'lucide-react';
 
 export default function KDSPage() {
+  const searchParams = useSearchParams();
+  const restaurantId = searchParams.get('restaurantId');
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTicketOrder, setSelectedTicketOrder] = useState<Order | null>(null);
@@ -30,7 +37,10 @@ export default function KDSPage() {
   // Carga inicial y actualización de pedidos activos
   const fetchOrders = useCallback(async () => {
     try {
-      const res = await fetch('/api/orders?limit=100');
+      const url = restaurantId
+        ? `/api/orders?limit=100&restaurantId=${encodeURIComponent(restaurantId)}`
+        : '/api/orders?limit=100';
+      const res = await fetch(url);
       const json = await res.json();
       if (json.success && json.data) {
         setOrders(json.data);
@@ -40,7 +50,7 @@ export default function KDSPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [restaurantId]);
 
   // Suscripción en Tiempo Real mediante Supabase Realtime
   useEffect(() => {
@@ -245,13 +255,27 @@ export default function KDSPage() {
     <div className="space-y-6">
       {/* Barra de control del KDS */}
       <div className="flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-[#121215] p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 shadow-xs">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <h2 className="text-base font-semibold text-zinc-950 dark:text-zinc-50 tracking-tight">
             KDS: Monitor de Cocina
           </h2>
           <span className="bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium text-xs px-2.5 py-0.5 rounded-md">
             {orders.length} pedidos activos
           </span>
+
+          {restaurantId && (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/80">
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Filtrado por restaurante</span>
+              <Link
+                href="/kds"
+                title="Ver pedidos de todos los locales"
+                className="ml-1 p-0.5 hover:bg-emerald-200/50 dark:hover:bg-emerald-900/50 rounded text-emerald-600 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-white transition"
+              >
+                <X className="w-3 h-3" />
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
