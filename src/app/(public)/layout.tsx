@@ -8,11 +8,7 @@ import { ShoppingBag, UtensilsCrossed, PhoneCall, ShieldCheck, ArrowRight } from
 import { formatCurrency } from '@/lib/utils/formatters';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
-export default function PublicLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function PublicLayout({ children }: { children: React.ReactNode; }) {
   const pathname = usePathname();
   const { totalItems, subtotal } = useCart();
   const isSaaSIndex = pathname === '/';

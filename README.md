@@ -46,7 +46,6 @@ NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOi..."
 SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOi..."
 DATABASE_URL="postgresql://postgres:[PASSWORD]@[HOST]:6543/postgres?pgbouncer=true"
-DIRECT_URL="postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres"
 NEXT_PUBLIC_RESTAURANT_PHONE="56912345678"
 ```
 

@@ -7,7 +7,7 @@
  */
 export function formatCurrency(
   amount: number | string,
-  currency: string = process.env.NEXT_PUBLIC_CURRENCY_CODE || 'CLP',
+  currency: string = 'CLP',
   locale: string = 'es-CL'
 ): string {
   const numericAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -51,7 +51,7 @@ export function formatPhoneNumber(phone: string): string {
  */
 export function validateRut(rut: string): boolean {
   if (!rut || typeof rut !== 'string') return false;
-  
+
   // Limpiar puntos y guiones
   const clean = rut.replace(/[^0-9kK]/g, '').toUpperCase();
   if (clean.length < 8 || clean.length > 9) return false;

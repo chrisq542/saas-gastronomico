@@ -53,6 +53,8 @@ jobs:
             if [ ! -f ".env" ]; then
               echo "📄 .env no encontrado en el servidor. Creando copia desde .env.example..."
               cp .env.example .env
+            elif ! grep -q "DIRECT_URL" .env; then
+              echo "DIRECT_URL=\"\$DATABASE_URL\"" >> .env
             fi
 
             echo "📦 Instalando dependencias..."

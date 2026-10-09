@@ -58,10 +58,10 @@ export async function GET(request: NextRequest) {
         ...(status ? { status: status as any } : {}),
         ...(phone
           ? {
-              customer: {
-                phone: { contains: cleanPhoneNumber(phone) },
-              },
-            }
+            customer: {
+              phone: { contains: cleanPhoneNumber(phone) },
+            },
+          }
           : {}),
       },
       orderBy: { createdAt: 'desc' },
@@ -170,9 +170,8 @@ export async function POST(request: NextRequest) {
           if (existingAddresses.length < 3) {
             const fullAddressText =
               data.address.address ||
-              `${data.address.street || ''} ${data.address.number || ''} ${
-                data.address.apartment ? 'Depto ' + data.address.apartment : ''
-              }`.trim();
+              `${data.address.street || ''} ${data.address.number || ''} ${data.address.apartment ? 'Depto ' + data.address.apartment : ''
+                }`.trim();
 
             await tx.address.create({
               data: {
@@ -202,7 +201,7 @@ export async function POST(request: NextRequest) {
 
         const deliveryFee =
           data.orderType === 'DELIVERY'
-            ? Number(process.env.NEXT_PUBLIC_DEFAULT_DELIVERY_FEE || 2000)
+            ? Number(2000) //TODO: agregar valor del delivery por tenant
             : 0;
         const total = subtotal + deliveryFee;
 
