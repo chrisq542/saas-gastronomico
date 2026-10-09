@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { formatCurrency, validateRut, cleanPhoneNumber } from '@/lib/utils/formatters';
 import {
@@ -22,6 +23,8 @@ import {
 
 export default function CheckoutPage() {
   const { items, subtotal, totalItems, updateQuantity, removeItem, clearCart } = useCart();
+  const searchParams = useSearchParams();
+  const tenantSlug = searchParams.get('tenant') || '';
 
   // Estados del formulario sin registro
   const [name, setName] = useState('');
@@ -52,6 +55,34 @@ export default function CheckoutPage() {
     orderNumber: number;
     whatsappUrl: string;
   } | null>(null);
+
+  // Validar si el tenant del subdominio existe al cargar el checkout
+  useEffect(() => {
+    if (tenantSlug) {
+      fetch(`/api/menu?slug=${encodeURIComponent(tenantSlug)}`)
+        .then((res) => res.json())
+        .then((res) => {
+          if (!res.success || res.notFound) {
+            const host = window.location.host;
+            const protocol = window.location.protocol;
+            if (host.includes('.localhost')) {
+              const port = window.location.port ? `:${window.location.port}` : '';
+              window.location.replace(`${protocol}//localhost${port}/`);
+            } else if (host.includes('.lvh.me')) {
+              const port = window.location.port ? `:${window.location.port}` : '';
+              window.location.replace(`${protocol}//lvh.me${port}/`);
+            } else {
+              const parts = host.split(':')[0].split('.');
+              if (parts.length > 2) {
+                const port = window.location.port ? `:${window.location.port}` : '';
+                window.location.replace(`${protocol}//${parts.slice(1).join('.')}${port}/`);
+              }
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [tenantSlug]);
 
   const deliveryFee = orderType === 'DELIVERY' ? 2000 : 0;
   const grandTotal = subtotal + deliveryFee;
@@ -118,6 +149,7 @@ export default function CheckoutPage() {
       }
 
       const payload = {
+        restaurantSlug: tenantSlug || null,
         customer: {
           name: name.trim(),
           phone: cleanPhone,

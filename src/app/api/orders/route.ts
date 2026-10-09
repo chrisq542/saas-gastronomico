@@ -9,6 +9,7 @@ export const dynamic = 'force-dynamic';
 
 const createOrderSchema = z.object({
   restaurantId: z.string().optional(),
+  restaurantSlug: z.string().optional(),
   customer: z.object({
     name: z.string().min(2, 'El nombre es obligatorio'),
     phone: z.string().min(8, 'Teléfono celular requerido'),
@@ -100,14 +101,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Obtener ID del restaurante
-    let restaurantId = data.restaurantId;
-    if (!restaurantId) {
-      const demoRestaurant = await prisma.restaurant.findFirst({
+    // Obtener Restaurante (por ID, slug en payload, o cabecera x-tenant-slug)
+    let restaurant: any = null;
+    const targetSlug = data.restaurantSlug || request.headers.get('x-tenant-slug');
+    const customDomain = request.headers.get('x-custom-domain');
+
+    if (data.restaurantId) {
+      restaurant = await prisma.restaurant.findUnique({
+        where: { id: data.restaurantId },
+      });
+    } else if (targetSlug) {
+      restaurant = await prisma.restaurant.findUnique({
+        where: { slug: targetSlug },
+      });
+    } else if (customDomain) {
+      restaurant = await prisma.restaurant.findUnique({
+        where: { customDomain },
+      });
+    }
+
+    if (!restaurant) {
+      restaurant = await prisma.restaurant.findFirst({
         where: { slug: 'sas-burger' },
       });
-      restaurantId = demoRestaurant?.id || 'a1111111-1111-1111-1111-111111111111';
     }
+
+    const restaurantId = restaurant?.id || 'a1111111-1111-1111-1111-111111111111';
 
     let formattedOrder: any;
 
@@ -278,6 +297,8 @@ export async function POST(request: NextRequest) {
 
     const whatsappUrl = generateOrderWhatsAppUrl({
       order: formattedOrder,
+      recipientPhone: restaurant?.phone || undefined,
+      restaurantName: restaurant?.name || undefined,
     });
 
     return NextResponse.json(
