@@ -24,16 +24,6 @@ export default function PublicLayout({
   if (isSaaSIndex) {
     return (
       <div className="flex flex-col min-h-screen bg-[#FFFFFF] dark:bg-[#09090B] text-[#09090B] dark:text-[#F4F4F5]">
-        {/* Top Announcement Bar */}
-        <div className="border-b border-zinc-200/80 dark:border-zinc-800/60 bg-zinc-50/80 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 text-xs py-1.5 px-4 text-center">
-          <div className="max-w-6xl mx-auto flex items-center justify-center gap-2">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span className="font-normal tracking-tight">
-              Infraestructura B2B Multi-Tenant con Supabase & PostgreSQL en tiempo real
-            </span>
-          </div>
-        </div>
-
         {/* Header Comercial SaaS */}
         <header className="sticky top-0 z-30 bg-white/80 dark:bg-[#09090B]/80 backdrop-blur-md border-b border-zinc-200/80 dark:border-zinc-800/80">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
