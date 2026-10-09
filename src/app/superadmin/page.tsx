@@ -398,17 +398,6 @@ export default function SuperadminPage() {
           </button>
         </div>
 
-        {/* Lista de Tenants */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <RefreshCw className="w-6 h-6 animate-spin text-emerald-500" />
-          </div>
-        ) : tenants.length === 0 ? (
-          <div className="text-center py-16 bg-white dark:bg-[#121215] rounded-2xl border border-zinc-200 dark:border-zinc-800">
-            <Store className="w-10 h-10 mx-auto text-zinc-400 mb-3" />
-            <p className="font-semibold text-sm">No hay restaurantes registrados</p>
-            <p className="text-xs text-zinc-500 mt-1">Haz clic en "Nuevo Restaurante" para aprovisionar el primero.</p>
-          </div>
         {/* Lista de Tenants en formato Tabla / Lista */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
