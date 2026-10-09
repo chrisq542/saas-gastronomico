@@ -7,6 +7,7 @@ import { useCart } from '@/context/CartContext';
 import { ShoppingBag, UtensilsCrossed, PhoneCall, ShieldCheck, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils/formatters';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { ROOT_URL } from '@/utils/contantes';
 
 export default function PublicLayout({ children }: { children: React.ReactNode; }) {
   const pathname = usePathname();
@@ -19,7 +20,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const hostname = window.location.hostname.toLowerCase();
-      const rootDomain = (process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'saasgastronomico.cl').toLowerCase();
+      const rootDomain = ROOT_URL.toLowerCase();
 
       // Es el portal raíz comercial si es exactamente el dominio principal o localhost sin subdominio
       const isExactRoot =

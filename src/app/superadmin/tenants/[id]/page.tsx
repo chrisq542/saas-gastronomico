@@ -33,6 +33,7 @@ import {
   Tag,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { ROOT_URL } from '@/utils/contantes';
 
 interface TenantUser {
   id: string;
@@ -565,11 +566,10 @@ export default function TenantDetailPage() {
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 animate-in fade-in slide-in-from-top-4">
           <div
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border text-sm font-medium ${
-              toastMessage.type === 'success'
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border text-sm font-medium ${toastMessage.type === 'success'
                 ? 'bg-emerald-950/90 text-emerald-200 border-emerald-800'
                 : 'bg-rose-950/90 text-rose-200 border-rose-800'
-            }`}
+              }`}
           >
             {toastMessage.type === 'success' ? (
               <CheckCircle2 className="w-5 h-5 text-emerald-400" />
@@ -608,11 +608,10 @@ export default function TenantDetailPage() {
                 <div className="flex items-center gap-2">
                   <h1 className="font-bold text-lg tracking-tight">{tenant.name}</h1>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                      tenant.isActive
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${tenant.isActive
                         ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                         : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20'
-                    }`}
+                      }`}
                   >
                     {tenant.isActive ? 'ACTIVO' : 'INACTIVO'}
                   </span>
@@ -628,7 +627,7 @@ export default function TenantDetailPage() {
               href={
                 typeof window !== 'undefined' && window.location.host.includes('localhost')
                   ? `http://${tenant.slug}.localhost:${window.location.port || '3000'}`
-                  : `https://${tenant.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'saasgastronomico.cl'}`
+                  : `https://${tenant.slug}.${ROOT_URL}`
               }
               target="_blank"
               rel="noreferrer"
@@ -653,11 +652,10 @@ export default function TenantDetailPage() {
 
               <button
                 onClick={() => setActiveTab('info')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${
-                  activeTab === 'info'
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${activeTab === 'info'
                     ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
-                }`}
+                  }`}
               >
                 <Info className="w-4 h-4" />
                 <span>Información General</span>
@@ -665,11 +663,10 @@ export default function TenantDetailPage() {
 
               <button
                 onClick={() => setActiveTab('categories')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${
-                  activeTab === 'categories'
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${activeTab === 'categories'
                     ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <FolderPlus className="w-4 h-4" />
@@ -682,11 +679,10 @@ export default function TenantDetailPage() {
 
               <button
                 onClick={() => setActiveTab('products')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${
-                  activeTab === 'products'
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${activeTab === 'products'
                     ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <UtensilsCrossed className="w-4 h-4" />
@@ -699,11 +695,10 @@ export default function TenantDetailPage() {
 
               <button
                 onClick={() => setActiveTab('users')}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${
-                  activeTab === 'users'
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${activeTab === 'users'
                     ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <Users className="w-4 h-4" />
@@ -716,11 +711,10 @@ export default function TenantDetailPage() {
 
               <button
                 onClick={() => setActiveTab('subscription')}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${
-                  activeTab === 'subscription'
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${activeTab === 'subscription'
                     ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
                     : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
-                }`}
+                  }`}
               >
                 <CreditCard className="w-4 h-4" />
                 <span>Suscripción & Pagos</span>
@@ -936,9 +930,8 @@ export default function TenantDetailPage() {
                         <div key={cat.id} className="py-3.5 flex items-center justify-between text-xs">
                           <div className="flex items-center gap-3">
                             <span
-                              className={`w-2.5 h-2.5 rounded-full ${
-                                cat.isActive ? 'bg-emerald-500' : 'bg-zinc-400 dark:bg-zinc-600'
-                              }`}
+                              className={`w-2.5 h-2.5 rounded-full ${cat.isActive ? 'bg-emerald-500' : 'bg-zinc-400 dark:bg-zinc-600'
+                                }`}
                             />
                             <div>
                               <p className="font-semibold text-zinc-900 dark:text-zinc-100">{cat.name}</p>
@@ -951,11 +944,10 @@ export default function TenantDetailPage() {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleToggleCategoryActive(cat)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-medium border flex items-center gap-1.5 transition ${
-                                cat.isActive
+                              className={`px-3 py-1.5 rounded-xl text-xs font-medium border flex items-center gap-1.5 transition ${cat.isActive
                                   ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20'
                                   : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700'
-                              }`}
+                                }`}
                             >
                               {cat.isActive ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
                               <span>{cat.isActive ? 'Visible en Menú' : 'Oculto en Menú'}</span>
@@ -1109,11 +1101,10 @@ export default function TenantDetailPage() {
                           <div className="flex items-center gap-2 shrink-0">
                             <button
                               onClick={() => handleToggleProductActive(prod)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-medium border flex items-center gap-1.5 transition ${
-                                prod.isActive
+                              className={`px-3 py-1.5 rounded-xl text-xs font-medium border flex items-center gap-1.5 transition ${prod.isActive
                                   ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20'
                                   : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-200 dark:border-zinc-700'
-                              }`}
+                                }`}
                             >
                               {prod.isActive ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
                               <span>{prod.isActive ? 'Visible' : 'Oculto'}</span>

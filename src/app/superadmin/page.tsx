@@ -31,6 +31,7 @@ import {
   User,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { ROOT_URL } from '@/utils/contantes';
 
 interface TenantUser {
   id: string;
@@ -468,15 +469,15 @@ export default function SuperadminPage() {
                               href={
                                 typeof window !== 'undefined' && window.location.host.includes('localhost')
                                   ? `http://${tenant.slug}.localhost:${window.location.port || '3000'}`
-                                  : `https://${tenant.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'saasgastronomico.cl'}`
+                                  : `https://${tenant.slug}.${ROOT_URL}`
                               }
                               target="_blank"
                               rel="noreferrer"
                               className="hover:underline flex items-center gap-1"
-                              title={`Abrir ${tenant.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'saasgastronomico.cl'}`}
+                              title={`Abrir ${tenant.slug}.${ROOT_URL}`}
                             >
                               <span>🔗</span>
-                              <span>{tenant.slug}.{process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'saasgastronomico.cl'}</span>
+                              <span>{tenant.slug}.{ROOT_URL}</span>
                             </a>
                           </p>
 

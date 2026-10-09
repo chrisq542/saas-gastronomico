@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ROOT_URL } from './utils/contantes';
 
 export const config = {
   matcher: [
@@ -22,8 +23,7 @@ export default function middleware(req: NextRequest) {
   let isCustomDomain = false;
 
   // Detección de dominio raíz y subdominios
-  const configuredRootDomain =
-    process.env.NEXT_PUBLIC_ROOT_DOMAIN?.toLowerCase().trim() || 'afxapp.cl';
+  const configuredRootDomain = ROOT_URL;
 
   const isIpAddress = /^\d+\.\d+\.\d+\.\d+$/.test(hostWithoutPort);
 
