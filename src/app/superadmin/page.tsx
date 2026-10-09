@@ -29,6 +29,7 @@ import {
   UserPlus,
   CheckCircle2,
   User,
+  Eye,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { ROOT_URL } from '@/utils/contantes';
@@ -399,7 +400,7 @@ export default function SuperadminPage() {
                     <th className="py-3.5 px-4">Ubicación & Dominio</th>
                     <th className="py-3.5 px-4 text-center">Métricas</th>
                     <th className="py-3.5 px-4 text-center">Estado</th>
-                    <th className="py-3.5 px-4 text-right">Acciones</th>
+                    <th className="py-3.5 px-4 text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
@@ -525,14 +526,23 @@ export default function SuperadminPage() {
 
                       {/* Acciones */}
                       <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1 flex-col ">
                           <Link
                             href={`/superadmin/tenants/${tenant.id}`}
                             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-sm"
                             title="Administrar Restaurante"
                           >
                             <Edit className="w-3.5 h-3.5 shrink-0" />
-                            <span>Ver detalle</span>
+                            <span>Administrar</span>
+                          </Link>
+
+                          <Link
+                            href={`/superadmin/tenants/${tenant.id}`}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-sm"
+                            title="Administrar Restaurante"
+                          >
+                            <Eye className="w-3.5 h-3.5 shrink-0" />
+                            <span>Ver tablero</span>
                           </Link>
                           {/* 
                           <button
