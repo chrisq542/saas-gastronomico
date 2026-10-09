@@ -38,7 +38,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
           setUserSession(data.user);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const isSaaSIndex = pathname === '/' && isSaaSRoot;

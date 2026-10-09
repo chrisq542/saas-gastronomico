@@ -44,6 +44,8 @@ model Restaurant {
   logoUrl      String?  @map("logo_url") @db.Text
   address      String?  @db.VarChar(255)
   customDomain String?  @unique @map("custom_domain") @db.VarChar(255)
+  planType     String?  @default("PRO") @map("plan_type") @db.VarChar(50)
+  planExpiresAt DateTime? @map("plan_expires_at")
   isActive     Boolean  @default(true) @map("is_active")
   createdAt    DateTime @default(now()) @map("created_at")
 
@@ -75,12 +77,14 @@ model Category {
   restaurantId String    @map("restaurant_id")
   name         String    @db.VarChar(100)
   sortOrder    Int       @default(0) @map("sort_order")
+  isActive     Boolean   @default(true) @map("is_active")
   createdAt    DateTime  @default(now()) @map("created_at")
 
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   products     Product[]
 
   @@index([restaurantId], name: "idx_categories_restaurant_id")
+  @@index([isActive], name: "idx_categories_is_active")
   @@map("categories")
 }
 

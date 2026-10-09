@@ -195,15 +195,6 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // C. Crear categorías iniciales sugeridas para que el menú no comience vacío
-      await tx.category.createMany({
-        data: [
-          { restaurantId: rest.id, name: 'Platos Principales', sortOrder: 1 },
-          { restaurantId: rest.id, name: 'Acompañamientos & Extras', sortOrder: 2 },
-          { restaurantId: rest.id, name: 'Bebidas & Refrescos', sortOrder: 3 },
-        ],
-      });
-
       return rest;
     });
 

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   UtensilsCrossed,
   Plus,
@@ -256,28 +257,6 @@ export default function SuperadminPage() {
     }
   };
 
-  // --- Gestión de Usuarios de Tenant ---
-  const openUsersModal = async (tenant: Tenant) => {
-    setUsersModalTenant(tenant);
-    setLoadingUsers(true);
-    setTenantUsers([]);
-    setNewUserEmail('');
-    setNewUserPassword('');
-    setNewUserRole('STORE_ADMIN');
-
-    try {
-      const res = await fetch(`/api/admin/restaurants/${tenant.id}/users`);
-      const data = await res.json();
-      if (data.success) {
-        setTenantUsers(data.data);
-      }
-    } catch (err) {
-      console.error('Error obteniendo usuarios:', err);
-    } finally {
-      setLoadingUsers(false);
-    }
-  };
-
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!usersModalTenant || !newUserEmail.trim() || !newUserPassword.trim()) return;
@@ -443,9 +422,12 @@ export default function SuperadminPage() {
                             </div>
                           )}
                           <div>
-                            <p className="font-bold text-sm text-zinc-950 dark:text-zinc-50 leading-tight">
+                            <Link
+                              href={`/superadmin/tenants/${tenant.id}`}
+                              className="font-bold text-sm text-zinc-950 dark:text-zinc-50 leading-tight hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition"
+                            >
                               {tenant.name}
-                            </p>
+                            </Link>
                             <p className="text-[11px] font-mono text-zinc-500 mt-0.5">/{tenant.slug}</p>
                           </div>
                         </div>
@@ -543,22 +525,14 @@ export default function SuperadminPage() {
                       {/* Acciones */}
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => openEditModal(tenant)}
-                            className="p-1.5 rounded-lg text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                            title="Editar Restaurante"
+                          <Link
+                            href={`/superadmin/tenants/${tenant.id}`}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-sm"
+                            title="Administrar Restaurante"
                           >
-                            <Edit className="w-4 h-4" />
-                          </button>
-
-                          <button
-                            onClick={() => openUsersModal(tenant)}
-                            className="px-2 py-1 rounded-lg text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center gap-1 text-[11px] font-medium"
-                            title="Gestionar Usuarios"
-                          >
-                            <Users className="w-3.5 h-3.5" />
-                            <span>Users</span>
-                          </button>
+                            <Edit className="w-3.5 h-3.5 shrink-0" />
+                            <span>Ver detalle</span>
+                          </Link>
                           {/* 
                           <button
                             onClick={() => handleDeleteTenant(tenant)}
