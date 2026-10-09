@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Order, OrderStatus } from '@/types';
 import { formatCurrency, formatDateTime, formatPhoneNumber, formatRut } from '@/lib/utils/formatters';
@@ -18,7 +18,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-export default function OrdersAdminPage() {
+function OrdersContent() {
   const searchParams = useSearchParams();
   const restaurantId = searchParams.get('restaurantId');
 
@@ -314,5 +314,22 @@ export default function OrdersAdminPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function OrdersAdminPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[300px]">
+          <div className="text-center space-y-2">
+            <RefreshCw className="w-5 h-5 animate-spin mx-auto text-zinc-400" />
+            <p className="text-xs text-zinc-500">Cargando pedidos...</p>
+          </div>
+        </div>
+      }
+    >
+      <OrdersContent />
+    </Suspense>
   );
 }

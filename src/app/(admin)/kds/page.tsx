@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Order, OrderStatus } from '@/types';
@@ -25,7 +25,7 @@ import {
   X,
 } from 'lucide-react';
 
-export default function KDSPage() {
+function KDSContent() {
   const searchParams = useSearchParams();
   const restaurantId = searchParams.get('restaurantId');
 
@@ -410,5 +410,22 @@ export default function KDSPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function KDSPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[300px]">
+          <div className="text-center space-y-2">
+            <RefreshCw className="w-5 h-5 animate-spin mx-auto text-zinc-400" />
+            <p className="text-xs text-zinc-500">Cargando monitor KDS...</p>
+          </div>
+        </div>
+      }
+    >
+      <KDSContent />
+    </Suspense>
   );
 }
