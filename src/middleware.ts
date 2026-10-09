@@ -22,32 +22,35 @@ export default function middleware(req: NextRequest) {
   let isCustomDomain = false;
 
   // Detección de dominio raíz y subdominios
-  const configuredRootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN?.toLowerCase().trim();
+  const configuredRootDomain =
+    process.env.NEXT_PUBLIC_ROOT_DOMAIN?.toLowerCase().trim() || 'afxapp.cl';
 
-  if (hostWithoutPort.endsWith('.localhost')) {
+  const isIpAddress = /^\d+\.\d+\.\d+\.\d+$/.test(hostWithoutPort);
+
+  if (isIpAddress || hostWithoutPort === 'localhost' || hostWithoutPort === '127.0.0.1') {
+    // Si se accede por IP directa o localhost, no aplicar rewrites de tenant
+    subdomain = null;
+    isCustomDomain = false;
+  } else if (hostWithoutPort.endsWith('.localhost')) {
     subdomain = hostWithoutPort.replace('.localhost', '').split('.')[0];
   } else if (hostWithoutPort.endsWith('.lvh.me')) {
     subdomain = hostWithoutPort.replace('.lvh.me', '').split('.')[0];
-  } else if (configuredRootDomain && hostWithoutPort.endsWith(`.${configuredRootDomain}`)) {
-    // Si NEXT_PUBLIC_ROOT_DOMAIN está configurado en las variables de entorno de Vercel
+  } else if (hostWithoutPort.endsWith(`.${configuredRootDomain}`)) {
     subdomain = hostWithoutPort.replace(`.${configuredRootDomain}`, '').split('.')[0];
+  } else if (
+    hostWithoutPort === configuredRootDomain ||
+    hostWithoutPort === `www.${configuredRootDomain}` ||
+    hostWithoutPort.endsWith('.vercel.app')
+  ) {
+    // Dominio raíz
+    subdomain = null;
   } else {
-    // Detección automática en producción si no se configuró NEXT_PUBLIC_ROOT_DOMAIN
+    // Posible subdominio dinámico o dominio personalizado
     const parts = hostWithoutPort.split('.');
-
-    // Descartar localhost, IPs y dominios directos de Vercel (vercel.app no soporta wildcards de fábrica)
-    if (
-      !hostWithoutPort.endsWith('.vercel.app') &&
-      hostWithoutPort !== 'localhost' &&
-      hostWithoutPort !== '127.0.0.1'
-    ) {
-      // Para dominios como: subdominio.tudominio.com o subdominio.tudominio.cl (3 o más partes)
-      if (parts.length >= 3) {
-        subdomain = parts[0];
-      } else {
-        // Es el dominio raíz (ej: tudominio.com o tudominio.cl)
-        subdomain = null;
-      }
+    if (parts.length >= 3) {
+      subdomain = parts[0];
+    } else {
+      isCustomDomain = true;
     }
   }
 
