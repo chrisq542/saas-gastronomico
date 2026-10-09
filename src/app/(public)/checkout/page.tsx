@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+export const dynamic = 'force-dynamic';
+
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
@@ -21,7 +23,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const { items, subtotal, totalItems, updateQuantity, removeItem, clearCart } = useCart();
   const searchParams = useSearchParams();
   const tenantSlug = searchParams.get('tenant') || '';
@@ -658,3 +660,23 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+function CheckoutFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="flex flex-col items-center gap-3 text-zinc-500 dark:text-zinc-400">
+        <div className="w-8 h-8 border-2 border-zinc-950 dark:border-zinc-100 border-t-transparent animate-spin rounded-full" />
+        <span className="text-xs font-medium">Cargando checkout...</span>
+      </div>
+    </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<CheckoutFallback />}>
+      <CheckoutContent />
+    </Suspense>
+  );
+}
+
