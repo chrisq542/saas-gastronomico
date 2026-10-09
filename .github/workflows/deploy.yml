@@ -1,0 +1,60 @@
+name: Deploy SaaS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy SaaS Gastronómico to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -e
+            echo "🚀 Iniciando despliegue en VPS..."
+
+            # Cargar nvm/node en caso de que la sesión SSH no lo detecte por defecto
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+            # Directorio y puerto asignado a esta app
+            APP_DIR="${{ secrets.VPS_TARGET_DIR || '/var/www/saas-gastronomico' }}"
+            APP_NAME="saas-gastronomico"
+            APP_PORT="3000" # Cambia este puerto según la app (ej: 3001, 3002)
+
+            cd "$APP_DIR"
+
+            echo "📥 Actualizando código desde Git..."
+            git fetch origin
+            git reset --hard origin/${{ github.ref_name }}
+
+            echo "📦 Instalando dependencias..."
+            npm ci
+
+            echo "🗄️ Generando Prisma Client y aplicando migraciones..."
+            npx prisma generate
+            npx prisma migrate deploy
+
+            echo "🏗️ Compilando Next.js..."
+            npm run build
+
+            echo "🔄 Reiniciando aplicación en PM2 en el puerto $APP_PORT..."
+            if pm2 describe "$APP_NAME" > /dev/null 2>&1; then
+              pm2 restart "$APP_NAME" --update-env
+            else
+              pm2 start npm --name "$APP_NAME" -- start -- -p "$APP_PORT"
+            fi
+
+            echo "💾 Guardando estado de PM2..."
+            pm2 save
+
+            echo "✅ ¡Despliegue completado con éxito!"

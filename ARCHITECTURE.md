@@ -99,7 +99,7 @@ erDiagram
 Para evitar interferencias y garantizar despliegues incrementales y seguros:
 
 ```text
-main (Producción Vercel)
+main (Producción VPS)
   ▲
   │ (Release PR)
 develop (Integración y Staging)
@@ -116,4 +116,4 @@ develop (Integración y Staging)
 3. **Flujo de Integración Continua (CI/CD):**  
    - Ramas de características (`feat/*`) abiertas exclusivamente desde `develop`.
    - Ningún cambio entra a `develop` sin pasar chequeo estricto de tipos (`tsc --noEmit`).
-   - Los merges a `main` disparan automáticamente el despliegue productivo en Vercel.
+   - Los merges a `main` y `develop` disparan automáticamente la compilación y despliegue directo al VPS mediante GitHub Actions.

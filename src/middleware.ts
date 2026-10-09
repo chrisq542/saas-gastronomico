@@ -39,8 +39,7 @@ export default function middleware(req: NextRequest) {
     subdomain = hostWithoutPort.replace(`.${configuredRootDomain}`, '').split('.')[0];
   } else if (
     hostWithoutPort === configuredRootDomain ||
-    hostWithoutPort === `www.${configuredRootDomain}` ||
-    hostWithoutPort.endsWith('.vercel.app')
+    hostWithoutPort === `www.${configuredRootDomain}`
   ) {
     // Dominio raíz
     subdomain = null;
