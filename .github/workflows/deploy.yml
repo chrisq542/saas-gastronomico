@@ -32,7 +32,15 @@ jobs:
             APP_NAME="saas-gastronomico"
             APP_PORT="3000" # Cambia este puerto según la app (ej: 3001, 3002)
 
+            # Crear directorio objetivo si no existe
+            mkdir -p "$APP_DIR"
             cd "$APP_DIR"
+
+            # Si el directorio está vacío / no es repositorio git, clonar
+            if [ ! -d ".git" ]; then
+              echo "⚙️ Inicializando repositorio en el VPS..."
+              git clone https://github.com/${{ github.repository }}.git .
+            fi
 
             echo "📥 Actualizando código desde Git..."
             git fetch origin
