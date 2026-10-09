@@ -425,7 +425,7 @@ export default function SuperadminPage() {
                           )}
                           <div>
                             <Link
-                              href={`/superadmin/tenants/${tenant.id}`}
+                              href={`/tenants/${tenant.id}`}
                               className="font-bold text-sm text-zinc-950 dark:text-zinc-50 leading-tight hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline transition"
                             >
                               {tenant.name}
@@ -528,7 +528,7 @@ export default function SuperadminPage() {
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1 flex-col ">
                           <Link
-                            href={`/superadmin/tenants/${tenant.id}`}
+                            href={`/tenants/${tenant.id}`}
                             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-sm"
                             title="Administrar Restaurante"
                           >
@@ -537,7 +537,7 @@ export default function SuperadminPage() {
                           </Link>
 
                           <Link
-                            href={`/superadmin/tenants/${tenant.id}`}
+                            href={`/tenants/${tenant.id}`}
                             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors shadow-sm"
                             title="Administrar Restaurante"
                           >
