@@ -49,6 +49,12 @@ jobs:
             git fetch origin
             git reset --hard origin/${{ github.ref_name }}
 
+            # Crear .env desde .env.example si aún no existe en el servidor
+            if [ ! -f ".env" ]; then
+              echo "📄 .env no encontrado en el servidor. Creando copia desde .env.example..."
+              cp .env.example .env
+            fi
+
             echo "📦 Instalando dependencias..."
             npm ci
 
