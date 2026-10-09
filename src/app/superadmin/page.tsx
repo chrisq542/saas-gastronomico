@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   UtensilsCrossed,
   Plus,
@@ -28,6 +27,7 @@ import {
   Key,
   UserPlus,
   CheckCircle2,
+  User,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
@@ -336,11 +336,10 @@ export default function SuperadminPage() {
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 animate-in fade-in slide-in-from-top-4">
           <div
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border text-sm font-medium ${
-              toastMessage.type === 'success'
-                ? 'bg-emerald-950/90 text-emerald-200 border-emerald-800'
-                : 'bg-rose-950/90 text-rose-200 border-rose-800'
-            }`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border text-sm font-medium ${toastMessage.type === 'success'
+              ? 'bg-emerald-950/90 text-emerald-200 border-emerald-800'
+              : 'bg-rose-950/90 text-rose-200 border-rose-800'
+              }`}
           >
             {toastMessage.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <AlertTriangle className="w-5 h-5 text-rose-400" />}
             <span>{toastMessage.text}</span>
@@ -456,11 +455,15 @@ export default function SuperadminPage() {
                       <td className="py-3.5 px-4">
                         <div className="space-y-0.5">
                           {tenant.rut ? (
-                            <p className="font-mono text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                            <p className="text-zinc-400 flex items-center gap-1 text-[11px]">
+                              <User className="w-3 h-3 text-zinc-400" />
                               {tenant.rut}
                             </p>
                           ) : (
-                            <p className="text-zinc-400 text-[11px] italic">Sin RUT</p>
+                            <p className="text-zinc-400 flex items-center gap-1 text-[11px]">
+                              <User className="w-3 h-3 text-zinc-400" />
+                              Sin RUT
+                            </p>
                           )}
                           <p className="text-zinc-500 flex items-center gap-1 text-[11px]">
                             <Phone className="w-3 h-3 text-zinc-400" />
@@ -471,20 +474,41 @@ export default function SuperadminPage() {
 
                       {/* Ubicación & Dominio */}
                       <td className="py-3.5 px-4 max-w-xs">
-                        <div className="space-y-0.5 truncate">
-                          {tenant.address ? (
-                            <p className="text-zinc-700 dark:text-zinc-300 truncate">
-                              📍 {tenant.address}
-                            </p>
-                          ) : (
-                            <p className="text-zinc-400 text-[11px] italic">Sin dirección</p>
-                          )}
-                          {tenant.customDomain && (
-                            <p className="text-emerald-600 dark:text-emerald-400 font-mono text-[11px] flex items-center gap-1 truncate">
-                              <Globe className="w-3 h-3 flex-shrink-0" />
-                              <span>{tenant.customDomain}</span>
-                            </p>
-                          )}
+                        <div className="space-y-1 text-[11px]">
+                          {/* Fila 1: Dirección del Tenant */}
+                          <p className="text-zinc-800 dark:text-zinc-200 truncate" title={tenant.address || 'Sin dirección'}>
+                            {tenant.address ? `📍 ${tenant.address}` : <span className="text-zinc-400 italic">Sin dirección</span>}
+                          </p>
+
+                          {/* Fila 2: Redirección al subdominio interno ([slug].[rootDomain]) */}
+                          <p className="font-mono text-emerald-600 dark:text-emerald-400 truncate">
+                            <a
+                              href={
+                                typeof window !== 'undefined' && window.location.host.includes('localhost')
+                                  ? `http://${tenant.slug}.localhost:${window.location.port || '3000'}`
+                                  : `https://${tenant.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'saasgastronomico.cl'}`
+                              }
+                              target="_blank"
+                              rel="noreferrer"
+                              className="hover:underline flex items-center gap-1"
+                              title={`Abrir ${tenant.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'saasgastronomico.cl'}`}
+                            >
+                              <span>🔗</span>
+                              <span>{tenant.slug}.{process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'saasgastronomico.cl'}</span>
+                            </a>
+                          </p>
+
+                          {/* Fila 3: Dominio personalizado */}
+                          <p className="font-mono text-zinc-600 dark:text-zinc-400 truncate">
+                            {tenant.customDomain ? (
+                              <span className="flex items-center gap-1 text-emerald-500">
+                                <Globe className="w-3 h-3 flex-shrink-0" />
+                                <span>{tenant.customDomain}</span>
+                              </span>
+                            ) : (
+                              <span className="text-zinc-400 italic">Sin dominio personalizado</span>
+                            )}
+                          </p>
                         </div>
                       </td>
 
@@ -507,11 +531,10 @@ export default function SuperadminPage() {
                       <td className="py-3.5 px-4 text-center">
                         <button
                           onClick={() => handleToggleStatus(tenant.id, tenant.isActive)}
-                          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer ${
-                            tenant.isActive
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
-                              : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20'
-                          }`}
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition cursor-pointer ${tenant.isActive
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
+                            : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-500/20'
+                            }`}
                         >
                           {tenant.isActive ? 'Activo' : 'Inactivo'}
                         </button>
@@ -536,24 +559,15 @@ export default function SuperadminPage() {
                             <Users className="w-3.5 h-3.5" />
                             <span>Users</span>
                           </button>
-
+                          {/* 
                           <button
                             onClick={() => handleDeleteTenant(tenant)}
                             className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 transition"
                             title="Eliminar Restaurante"
                           >
                             <Trash2 className="w-4 h-4" />
-                          </button>
-
-                          <a
-                            href={`/${tenant.slug}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition"
-                            title="Abrir Carta Digital"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
+                          </button> 
+                          */}
                         </div>
                       </td>
                     </tr>

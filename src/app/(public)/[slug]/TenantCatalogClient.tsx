@@ -74,11 +74,6 @@ export default function TenantCatalogClient({
                 <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
                 <span>Carta Digital Online</span>
               </span>
-              {restaurant.rut && (
-                <span className="text-[11px] px-2 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-mono">
-                  RUT: {restaurant.rut}
-                </span>
-              )}
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
               {restaurant.name}
