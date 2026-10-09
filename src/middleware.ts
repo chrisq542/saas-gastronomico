@@ -21,23 +21,33 @@ export default function middleware(req: NextRequest) {
   let subdomain: string | null = null;
   let isCustomDomain = false;
 
+  // Detección de dominio raíz y subdominios
+  const configuredRootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN?.toLowerCase().trim();
+
   if (hostWithoutPort.endsWith('.localhost')) {
     subdomain = hostWithoutPort.replace('.localhost', '').split('.')[0];
   } else if (hostWithoutPort.endsWith('.lvh.me')) {
     subdomain = hostWithoutPort.replace('.lvh.me', '').split('.')[0];
+  } else if (configuredRootDomain && hostWithoutPort.endsWith(`.${configuredRootDomain}`)) {
+    // Si NEXT_PUBLIC_ROOT_DOMAIN está configurado en las variables de entorno de Vercel
+    subdomain = hostWithoutPort.replace(`.${configuredRootDomain}`, '').split('.')[0];
   } else {
-    const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'saasgastronomico.cl';
+    // Detección automática en producción si no se configuró NEXT_PUBLIC_ROOT_DOMAIN
+    const parts = hostWithoutPort.split('.');
 
-    if (hostWithoutPort.endsWith(`.${rootDomain}`)) {
-      subdomain = hostWithoutPort.replace(`.${rootDomain}`, '').split('.')[0];
-    } else if (
+    // Descartar localhost, IPs y dominios directos de Vercel (vercel.app no soporta wildcards de fábrica)
+    if (
+      !hostWithoutPort.endsWith('.vercel.app') &&
       hostWithoutPort !== 'localhost' &&
-      hostWithoutPort !== '127.0.0.1' &&
-      hostWithoutPort !== rootDomain &&
-      hostWithoutPort !== `www.${rootDomain}` &&
-      !hostWithoutPort.endsWith('.vercel.app')
+      hostWithoutPort !== '127.0.0.1'
     ) {
-      isCustomDomain = true;
+      // Para dominios como: subdominio.tudominio.com o subdominio.tudominio.cl (3 o más partes)
+      if (parts.length >= 3) {
+        subdomain = parts[0];
+      } else {
+        // Es el dominio raíz (ej: tudominio.com o tudominio.cl)
+        subdomain = null;
+      }
     }
   }
 
