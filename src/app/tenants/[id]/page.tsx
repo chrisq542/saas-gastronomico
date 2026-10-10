@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import TenantProfileHUD from './_components/TenantProfileHUD';
 import {
   ArrowLeft,
   Users,
@@ -64,6 +65,7 @@ interface TenantDetail {
   phone: string;
   rut?: string | null;
   logoUrl?: string | null;
+  bannerUrl?: string | null;
   address?: string | null;
   customDomain?: string | null;
   planType?: string | null;
@@ -93,11 +95,25 @@ export default function TenantDetailPage() {
   const [slug, setSlug] = useState('');
   const [rut, setRut] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
+  const [bannerUrl, setBannerUrl] = useState('');
   const [address, setAddress] = useState('');
   const [customDomain, setCustomDomain] = useState('');
   const [phone, setPhone] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [isUpdatingInfo, setIsUpdatingInfo] = useState(false);
+  const infoFormRef = useRef<HTMLDivElement>(null);
+
+  const hasChanges =
+    Boolean(tenant) &&
+    (name !== (tenant?.name || '') ||
+      slug !== (tenant?.slug || '') ||
+      rut !== (tenant?.rut || '') ||
+      phone !== (tenant?.phone || '') ||
+      address !== (tenant?.address || '') ||
+      customDomain !== (tenant?.customDomain || '') ||
+      isActive !== (tenant?.isActive ?? true) ||
+      logoUrl !== (tenant?.logoUrl || '') ||
+      bannerUrl !== (tenant?.bannerUrl || ''));
 
   // Tab Categorías
   const [categories, setCategories] = useState<Category[]>([]);
@@ -194,6 +210,7 @@ export default function TenantDetailPage() {
         setSlug(t.slug || '');
         setRut(t.rut || '');
         setLogoUrl(t.logoUrl || '');
+        setBannerUrl(t.bannerUrl || '');
         setAddress(t.address || '');
         setCustomDomain(t.customDomain || '');
         setPhone(t.phone || '');
@@ -261,8 +278,8 @@ export default function TenantDetailPage() {
   };
 
   // Guardar Cambios Tab 1: Información General
-  const handleUpdateInfo = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpdateInfo = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!name.trim() || !slug.trim() || !phone.trim()) {
       showToast('error', 'Nombre, Subdominio y Teléfono son campos requeridos.');
       return;
@@ -278,6 +295,7 @@ export default function TenantDetailPage() {
           slug: slug.trim(),
           rut: rut.trim() || null,
           logoUrl: logoUrl.trim() || null,
+          bannerUrl: bannerUrl.trim() || null,
           address: address.trim() || null,
           customDomain: customDomain.trim() || null,
           phone: phone.trim(),
@@ -287,7 +305,7 @@ export default function TenantDetailPage() {
 
       const data = await res.json();
       if (data.success) {
-        showToast('success', 'Información del restaurante actualizada correctamente.');
+        showToast('success', 'Información y multimedia guardados con éxito en la base de datos.');
         fetchTenantDetail();
       } else {
         showToast('error', data.message || 'Error al actualizar información.');
@@ -728,131 +746,141 @@ export default function TenantDetailPage() {
 
           {/* Panel Principal de Contenido */}
           <main className="md:col-span-3">
-            {/* TAB 1: INFORMACIÓN GENERAL */}
+            {/* TAB 1: INFORMACIÓN GENERAL CON HUD DE PERFIL ESTILO X / TWITTER */}
             {activeTab === 'info' && (
-              <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs space-y-6">
-                <div>
-                  <h3 className="text-lg font-bold tracking-tight">Información del Restaurante</h3>
-                  <p className="text-xs text-zinc-500">
-                    Modifica los datos comerciales, dominio y estado de atención del local.
-                  </p>
-                </div>
+              <div className="space-y-6">
+                {/* HUD de Portada, Avatar y Acciones Rápidas */}
+                <TenantProfileHUD
+                  tenant={tenant}
+                  logoUrl={logoUrl}
+                  bannerUrl={bannerUrl}
+                  onLogoChange={(base64) => setLogoUrl(base64)}
+                  onBannerChange={(base64) => setBannerUrl(base64)}
+                  onRemoveLogo={() => setLogoUrl('')}
+                  onRemoveBanner={() => setBannerUrl('')}
+                  onSave={() => handleUpdateInfo()}
+                  isSaving={isUpdatingInfo}
+                  hasUnsavedChanges={hasChanges}
+                  onEditProfileClick={() => {
+                    infoFormRef.current?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                />
 
-                <form onSubmit={handleUpdateInfo} className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Formulario de Datos Comerciales */}
+                <div
+                  ref={infoFormRef}
+                  className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6"
+                >
+                  <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
                     <div>
-                      <label className="block text-xs font-medium mb-1">Nombre Comercial *</label>
+                      <h3 className="text-base font-bold tracking-tight">Datos del Restaurante</h3>
+                      <p className="text-xs text-zinc-500">
+                        Modifica los datos comerciales, slug de acceso y estado de atención del local.
+                      </p>
+                    </div>
+                    {hasChanges && (
+                      <span className="text-[11px] font-semibold text-amber-500 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 animate-pulse">
+                        Cambios pendientes por guardar
+                      </span>
+                    )}
+                  </div>
+
+                  <form onSubmit={handleUpdateInfo} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Nombre Comercial *</label>
+                        <input
+                          type="text"
+                          required
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Subdominio / Slug *</label>
+                        <input
+                          type="text"
+                          required
+                          value={slug}
+                          onChange={(e) => setSlug(e.target.value)}
+                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium mb-1">RUT Comercial</label>
+                        <input
+                          type="text"
+                          value={rut}
+                          onChange={(e) => setRut(e.target.value)}
+                          placeholder="76.123.456-7"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Teléfono / WhatsApp *</label>
+                        <input
+                          type="text"
+                          required
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="56912345678"
+                          className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium mb-1">Dirección del Local</label>
                       <input
                         type="text"
-                        required
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        placeholder="Av. Providencia 1234, Santiago"
                         className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-medium mb-1">Subdominio / Slug *</label>
+                      <label className="block text-xs font-medium mb-1">Dominio Personalizado (Opcional)</label>
                       <input
                         type="text"
-                        required
-                        value={slug}
-                        onChange={(e) => setSlug(e.target.value)}
+                        value={customDomain}
+                        onChange={(e) => setCustomDomain(e.target.value)}
+                        placeholder="sazonperuana.cl"
                         className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono"
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium mb-1">RUT Comercial</label>
+                    <div className="flex items-center gap-3 p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800">
                       <input
-                        type="text"
-                        value={rut}
-                        onChange={(e) => setRut(e.target.value)}
-                        placeholder="76.123.456-7"
-                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        type="checkbox"
+                        id="isActiveCheckbox"
+                        checked={isActive}
+                        onChange={(e) => setIsActive(e.target.checked)}
+                        className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                       />
+                      <label htmlFor="isActiveCheckbox" className="text-xs font-medium cursor-pointer">
+                        Restaurante Activo (Permite recibir pedidos y visualizar catálogo público)
+                      </label>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-medium mb-1">Teléfono / WhatsApp *</label>
-                      <input
-                        type="text"
-                        required
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="56912345678"
-                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                      />
+                    <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
+                      <button
+                        type="submit"
+                        disabled={isUpdatingInfo}
+                        className="px-6 py-2.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md transition disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      >
+                        {isUpdatingInfo ? 'Guardando...' : 'Guardar Información'}
+                      </button>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium mb-1">URL Imagen Logo / Icono</label>
-                    <div className="flex gap-3">
-                      <input
-                        type="url"
-                        value={logoUrl}
-                        onChange={(e) => setLogoUrl(e.target.value)}
-                        placeholder="https://midominio.com/logo.png"
-                        className="flex-1 px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                      />
-                      {logoUrl && (
-                        <img
-                          src={logoUrl}
-                          alt="Preview"
-                          className="w-9 h-9 rounded-xl object-cover border border-zinc-200 dark:border-zinc-700"
-                        />
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Dirección del Local</label>
-                    <input
-                      type="text"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="Av. Providencia 1234, Santiago"
-                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Dominio Personalizado (Opcional)</label>
-                    <input
-                      type="text"
-                      value={customDomain}
-                      onChange={(e) => setCustomDomain(e.target.value)}
-                      placeholder="sazonperuana.cl"
-                      className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono"
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800">
-                    <input
-                      type="checkbox"
-                      id="isActiveCheckbox"
-                      checked={isActive}
-                      onChange={(e) => setIsActive(e.target.checked)}
-                      className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
-                    />
-                    <label htmlFor="isActiveCheckbox" className="text-xs font-medium cursor-pointer">
-                      Restaurante Activo (Permite recibir pedidos y visualizar catálogo público)
-                    </label>
-                  </div>
-
-                  <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={isUpdatingInfo}
-                      className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs shadow-md transition disabled:opacity-50"
-                    >
-                      {isUpdatingInfo ? 'Guardando...' : 'Guardar Cambios'}
-                    </button>
-                  </div>
-                </form>
+                  </form>
+                </div>
               </div>
             )}
 

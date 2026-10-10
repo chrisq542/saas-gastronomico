@@ -42,6 +42,7 @@ model Restaurant {
   phone        String   @db.VarChar(20)
   rut          String?  @db.VarChar(20)
   logoUrl      String?  @map("logo_url") @db.Text
+  bannerUrl    String?  @map("banner_url") @db.Text
   address      String?  @db.VarChar(255)
   customDomain String?  @unique @map("custom_domain") @db.VarChar(255)
   planType     String?  @default("PRO") @map("plan_type") @db.VarChar(50)

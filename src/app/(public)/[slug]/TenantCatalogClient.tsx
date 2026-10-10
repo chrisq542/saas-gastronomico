@@ -15,6 +15,7 @@ interface TenantCatalogClientProps {
     phone: string;
     rut?: string | null;
     logoUrl?: string | null;
+    bannerUrl?: string | null;
     address?: string | null;
     customDomain?: string | null;
   };
@@ -53,39 +54,65 @@ export default function TenantCatalogClient({
 
   return (
     <div className="space-y-8 pb-24">
-      {/* Hero Promocional del Restaurante */}
-      <section className="relative overflow-hidden rounded-xl border border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50 dark:bg-[#121215] p-6 sm:p-8 shadow-xs mx-3 mt-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 relative z-10">
-          {restaurant.logoUrl ? (
+      {/* Hero Promocional y Banner del Restaurante */}
+      <section className="relative overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-[#121215] shadow-xs mx-1 sm:mx-3 mt-3 sm:mt-4">
+        {restaurant.bannerUrl && (
+          <div className="relative h-44 sm:h-60 md:h-72 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={restaurant.logoUrl}
-              alt={restaurant.name}
-              className="w-20 h-20 rounded-2xl object-cover border border-zinc-200 dark:border-zinc-700 shadow-md flex-shrink-0"
+              src={restaurant.bannerUrl}
+              alt={`Banner promocional de ${restaurant.name}`}
+              className="w-full h-full object-cover transition duration-700 hover:scale-105"
             />
-          ) : (
-            <div className="w-20 h-20 rounded-2xl bg-zinc-950 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-950 font-bold text-2xl shadow-md flex-shrink-0">
-              {restaurant.name.charAt(0)}
-            </div>
-          )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
+          </div>
+        )}
 
-          <div className="space-y-1.5 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Carta Digital Online</span>
-              </span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
-              {restaurant.name}
-            </h2>
-            {restaurant.address && (
-              <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-                📍 {restaurant.address}
-              </p>
+        <div className={`p-5 sm:p-7 relative z-10 ${restaurant.bannerUrl ? '-mt-14 sm:-mt-16' : ''}`}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-5">
+            {restaurant.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={restaurant.logoUrl}
+                alt={restaurant.name}
+                className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 shadow-lg flex-shrink-0 ${
+                  restaurant.bannerUrl
+                    ? 'border-white dark:border-zinc-900 bg-white dark:bg-zinc-950 ring-2 ring-black/10'
+                    : 'border-zinc-200 dark:border-zinc-700'
+                }`}
+              />
+            ) : (
+              <div
+                className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-zinc-950 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-950 font-bold text-2xl sm:text-3xl shadow-lg flex-shrink-0 ${
+                  restaurant.bannerUrl
+                    ? 'border-2 border-white dark:border-zinc-900 ring-2 ring-black/10'
+                    : ''
+                }`}
+              >
+                {restaurant.name.charAt(0)}
+              </div>
             )}
-            <p className="text-xs text-zinc-500 dark:text-zinc-500 leading-relaxed">
-              Selecciona tus productos favoritos, dinos a dónde enviarlo y confirma directamente por WhatsApp.
-            </p>
+
+            <div className="space-y-1.5 flex-1 pt-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>Carta Digital Online</span>
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
+                {restaurant.name}
+              </h2>
+              {restaurant.address && (
+                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
+                  <span>📍</span>
+                  <span>{restaurant.address}</span>
+                </p>
+              )}
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl">
+                Selecciona tus productos favoritos, dinos a dónde enviarlo y confirma directamente por WhatsApp.
+              </p>
+            </div>
           </div>
         </div>
       </section>

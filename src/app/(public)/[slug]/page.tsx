@@ -81,6 +81,7 @@ export default async function TenantCatalogPage({ params }: { params: { slug: st
         phone: restaurant.phone,
         rut: restaurant.rut,
         logoUrl: restaurant.logoUrl,
+        bannerUrl: restaurant.bannerUrl,
         address: restaurant.address,
         customDomain: restaurant.customDomain,
       }}

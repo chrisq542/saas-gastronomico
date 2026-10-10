@@ -84,7 +84,7 @@ export async function PATCH(
 
     const restaurantId = params.id;
     const body = await req.json();
-    const { isActive, name, phone, rut, logoUrl, address, customDomain, slug, planType, planExpiresAt } = body;
+    const { isActive, name, phone, rut, logoUrl, bannerUrl, address, customDomain, slug, planType, planExpiresAt } = body;
 
     const dataToUpdate: any = {};
     if (typeof isActive === 'boolean') dataToUpdate.isActive = isActive;
@@ -92,6 +92,7 @@ export async function PATCH(
     if (phone) dataToUpdate.phone = phone.trim();
     if (rut !== undefined) dataToUpdate.rut = rut ? rut.trim() : null;
     if (logoUrl !== undefined) dataToUpdate.logoUrl = logoUrl ? logoUrl.trim() : null;
+    if (bannerUrl !== undefined) dataToUpdate.bannerUrl = bannerUrl ? bannerUrl.trim() : null;
     if (address !== undefined) dataToUpdate.address = address ? address.trim() : null;
     if (planType) dataToUpdate.planType = planType.trim();
     if (planExpiresAt !== undefined) dataToUpdate.planExpiresAt = planExpiresAt ? new Date(planExpiresAt) : null;

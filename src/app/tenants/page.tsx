@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { fileToBase64Optimized } from '@/lib/utils/image';
 import {
   UtensilsCrossed,
   Plus,
@@ -48,6 +49,7 @@ interface Tenant {
   phone: string;
   rut?: string | null;
   logoUrl?: string | null;
+  bannerUrl?: string | null;
   address?: string | null;
   customDomain?: string | null;
   isActive: boolean;
@@ -79,12 +81,15 @@ export default function SuperadminPage() {
   const [slug, setSlug] = useState('');
   const [rut, setRut] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
+  const [bannerUrl, setBannerUrl] = useState('');
   const [address, setAddress] = useState('');
   const [customDomain, setCustomDomain] = useState('');
   const [phone, setPhone] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('Admin1234!');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const logoModalInputRef = useRef<HTMLInputElement>(null);
+  const bannerModalInputRef = useRef<HTMLInputElement>(null);
 
   // Formulario de Nuevo Usuario para Tenant
   const [newUserEmail, setNewUserEmail] = useState('');
@@ -142,6 +147,7 @@ export default function SuperadminPage() {
     setSlug('');
     setRut('');
     setLogoUrl('');
+    setBannerUrl('');
     setAddress('');
     setCustomDomain('');
     setPhone('');
@@ -157,10 +163,33 @@ export default function SuperadminPage() {
     setSlug(tenant.slug);
     setRut(tenant.rut || '');
     setLogoUrl(tenant.logoUrl || '');
+    setBannerUrl(tenant.bannerUrl || '');
     setAddress(tenant.address || '');
     setCustomDomain(tenant.customDomain || '');
     setPhone(tenant.phone);
     setIsCreateModalOpen(true);
+  };
+
+  const handleLogoFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const base64 = await fileToBase64Optimized(file, { maxWidth: 400, maxHeight: 400, quality: 0.85 });
+      setLogoUrl(base64);
+    } catch {
+      showToast('error', 'Error al procesar el archivo del logotipo.');
+    }
+  };
+
+  const handleBannerFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const base64 = await fileToBase64Optimized(file, { maxWidth: 1280, maxHeight: 500, quality: 0.82 });
+      setBannerUrl(base64);
+    } catch {
+      showToast('error', 'Error al procesar el archivo de la portada.');
+    }
   };
 
   const handleSaveTenant = async (e: React.FormEvent) => {
@@ -187,6 +216,7 @@ export default function SuperadminPage() {
         slug: slug.trim(),
         rut: rut.trim() || null,
         logoUrl: logoUrl.trim() || null,
+        bannerUrl: bannerUrl.trim() || null,
         address: address.trim() || null,
         customDomain: customDomain.trim() || null,
         phone: phone.trim(),
@@ -625,18 +655,87 @@ export default function SuperadminPage() {
                 </div>
               </div>
 
+              {/* Logotipo (Guardado en BD) */}
               <div>
-                <label className="block text-xs font-medium mb-1">URL Imagen Logo / Icono</label>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
-                    placeholder="https://midominio.com/logo.png"
-                    className="flex-1 px-3 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                  />
-                  {logoUrl && (
-                    <img src={logoUrl} alt="Preview" className="w-9 h-9 rounded-lg object-cover border" />
+                <input
+                  ref={logoModalInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleLogoFile}
+                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium">Logotipo / Icono del Local</label>
+                  <span className="text-[10px] text-emerald-500 font-medium">Guarda directo en BD</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  {logoUrl ? (
+                    <div className="relative group">
+                      <img src={logoUrl} alt="Preview Logo" className="w-12 h-12 rounded-xl object-cover border" />
+                      <button
+                        type="button"
+                        onClick={() => setLogoUrl('')}
+                        className="absolute -top-1 -right-1 p-0.5 bg-rose-600 text-white rounded-full text-[9px]"
+                        title="Eliminar logo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center text-zinc-400 text-xs">
+                      Sin logo
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => logoModalInputRef.current?.click()}
+                    className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-medium transition"
+                  >
+                    {logoUrl ? 'Cambiar archivo...' : 'Subir archivo (PNG/JPG)...'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Banner (Guardado en BD) */}
+              <div>
+                <input
+                  ref={bannerModalInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleBannerFile}
+                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium">Banner / Portada</label>
+                  <span className="text-[10px] text-emerald-500 font-medium">Guarda directo en BD</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => bannerModalInputRef.current?.click()}
+                      className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-medium transition"
+                    >
+                      {bannerUrl ? 'Cambiar archivo portada...' : 'Subir archivo portada (PNG/JPG)...'}
+                    </button>
+                    {bannerUrl && (
+                      <button
+                        type="button"
+                        onClick={() => setBannerUrl('')}
+                        className="px-2.5 py-1.5 text-xs text-rose-500 hover:text-rose-600 border border-rose-200 dark:border-rose-900/50 rounded-lg"
+                      >
+                        Quitar
+                      </button>
+                    )}
+                  </div>
+                  {bannerUrl && (
+                    <div className="relative h-20 w-full rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900">
+                      <img
+                        src={bannerUrl}
+                        alt="Preview Banner"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   )}
                 </div>
               </div>

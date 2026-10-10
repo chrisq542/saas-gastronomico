@@ -50,6 +50,9 @@ export async function GET(request: NextRequest) {
             name: restaurant.name,
             slug: restaurant.slug,
             phone: restaurant.phone,
+            logoUrl: restaurant.logoUrl,
+            bannerUrl: restaurant.bannerUrl,
+            address: restaurant.address,
             customDomain: restaurant.customDomain,
           }
         : null,
