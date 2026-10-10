@@ -757,7 +757,7 @@ export default function SuperadminPage() {
                   type="text"
                   value={customDomain}
                   onChange={(e) => setCustomDomain(e.target.value)}
-                  placeholder="sazonperuana.cl"
+                  placeholder="tudominio.cl"
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono"
                 />
               </div>

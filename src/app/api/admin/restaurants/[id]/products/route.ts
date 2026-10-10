@@ -111,11 +111,12 @@ export async function PATCH(
     }
 
     const body = await req.json();
-    const { productId, categoryId, name, description, price, imageUrl, isActive } = body;
+    const { categoryId, name, description, price, imageUrl, isActive } = body;
+    const targetId = body.productId || body.id;
 
-    if (!productId) {
+    if (!targetId) {
       return NextResponse.json(
-        { success: false, message: 'productId es requerido' },
+        { success: false, message: 'productId o id es requerido' },
         { status: 400 }
       );
     }
@@ -129,7 +130,7 @@ export async function PATCH(
     if (typeof isActive === 'boolean') updateData.isActive = isActive;
 
     const updated = await prisma.product.update({
-      where: { id: productId, restaurantId: params.id },
+      where: { id: targetId, restaurantId: params.id },
       data: updateData,
       include: {
         category: {

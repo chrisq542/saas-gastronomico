@@ -55,9 +55,9 @@ export default function TenantCatalogClient({
   return (
     <div className="space-y-8 pb-24">
       {/* Hero Promocional y Banner del Restaurante */}
-      <section className="relative overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-[#121215] shadow-xs mx-1 sm:mx-3 mt-3 sm:mt-4">
+      <section className="-mx-4 -mt-6 sm:mx-0 sm:mt-4 relative overflow-hidden rounded-none sm:rounded-2xl border-b sm:border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-[#121215] shadow-none sm:shadow-xs">
         {restaurant.bannerUrl && (
-          <div className="relative h-44 sm:h-60 md:h-72 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
+          <div className="relative h-48 sm:h-60 md:h-72 w-full overflow-hidden bg-zinc-100 dark:bg-zinc-900">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={restaurant.bannerUrl}
@@ -68,7 +68,7 @@ export default function TenantCatalogClient({
           </div>
         )}
 
-        <div className={`p-5 sm:p-7 relative z-10 ${restaurant.bannerUrl ? '-mt-14 sm:-mt-16' : ''}`}>
+        <div className={`px-4 pt-4 pb-6 sm:p-7 relative z-10 ${restaurant.bannerUrl ? '-mt-12 sm:-mt-16' : ''}`}>
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-5">
             {restaurant.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -119,7 +119,7 @@ export default function TenantCatalogClient({
 
       {/* Selector de Categorías (Sleek Pills) */}
       {categories.length > 0 && (
-        <div className="sticky top-16 z-20 bg-white/90 dark:bg-[#09090B]/90 backdrop-blur-md py-2 -mx-4 px-4 overflow-x-auto flex gap-2 border-b border-zinc-200/60 dark:border-zinc-800/60">
+        <div className="sticky top-14 z-20 bg-white/95 dark:bg-[#09090B]/95 backdrop-blur-md py-2.5 -mx-4 px-4 overflow-x-auto flex gap-2 border-b border-zinc-200/80 dark:border-zinc-800/80">
           <button
             onClick={() => setActiveCategoryId('all')}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap ${activeCategoryId === 'all'
@@ -156,9 +156,15 @@ export default function TenantCatalogClient({
       <div className="space-y-10">
         {filteredCategories.map((cat) => (
           <div key={cat.id} className="space-y-4">
-            <h3 className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
-              {cat.name}
-            </h3>
+            {/* Cabecera Sticky del Nombre de la Categoría */}
+            <div className="sticky top-[106px] sm:top-[108px] z-10 py-2.5 -mx-4 px-4 sm:-mx-2 sm:px-2 bg-white/95 dark:bg-[#09090B]/95 backdrop-blur-md border-b border-zinc-200/60 dark:border-zinc-800/60 sm:rounded-lg">
+              <h3 className="text-base sm:text-lg font-bold tracking-tight text-zinc-950 dark:text-zinc-100 flex items-center justify-between">
+                <span>{cat.name}</span>
+                <span className="text-xs font-normal text-zinc-400 dark:text-zinc-500">
+                  {cat.products?.length || 0} {cat.products?.length === 1 ? 'producto' : 'productos'}
+                </span>
+              </h3>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {cat.products?.map((prod: Product) => (
