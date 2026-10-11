@@ -54,6 +54,7 @@ function CheckoutContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [createdOrderData, setCreatedOrderData] = useState<{
+    id: string;
     orderNumber: number;
     whatsappUrl: string;
   } | null>(null);
@@ -193,6 +194,7 @@ function CheckoutContent() {
 
       // Éxito: Guardar datos de confirmación y vaciar carrito local
       setCreatedOrderData({
+        id: json.data.id,
         orderNumber: json.data.orderNumber,
         whatsappUrl: json.whatsappUrl,
       });
@@ -219,11 +221,19 @@ function CheckoutContent() {
             Orden #{createdOrderData.orderNumber}
           </h2>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            Tu orden ha ingresado al monitor de cocina. Para confirmación y seguimiento, envía el pedido por WhatsApp:
+            Tu orden ha ingresado al monitor de cocina. Puedes seguir su preparación en vivo o enviar la confirmación por WhatsApp:
           </p>
         </div>
 
         <div className="pt-2 space-y-3">
+          <Link
+            href={`/order-status/${createdOrderData.id}`}
+            className="flex items-center justify-center gap-2 w-full bg-zinc-950 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 text-white font-medium py-3 px-5 rounded-lg shadow-xs transition text-xs sm:text-sm"
+          >
+            <span>Ver Seguimiento en Vivo (Tiempo Real)</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+          </Link>
+
           <a
             href={createdOrderData.whatsappUrl}
             target="_blank"

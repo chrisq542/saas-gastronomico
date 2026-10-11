@@ -2,9 +2,11 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Order, OrderStatus } from '@/types';
+import { useOrdersRealtime } from '@/hooks/useOrdersRealtime';
+import { playNewOrderSound, unlockAudio } from '@/lib/utils/sound';
 import { formatCurrency, formatDateTime, formatPhoneNumber, formatRut } from '@/lib/utils/formatters';
 import { ThermalTicket80mm } from '@/components/tickets/ThermalTicket80mm';
 import { printThermalTicket } from '@/lib/print/thermal-ticket';
@@ -16,19 +18,43 @@ import {
   Bike,
   Store,
   RefreshCw,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 
 function OrdersContent() {
   const searchParams = useSearchParams();
-  const restaurantId = searchParams.get('restaurantId');
+  const paramRestaurantId = searchParams.get('restaurantId');
+  const [restaurantId, setRestaurantId] = useState<string | null>(paramRestaurantId);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [ticketOrder, setTicketOrder] = useState<Order | null>(null);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
-  const fetchOrders = async () => {
+  // Resolver restaurantId desde sesión si no viene por query param
+  useEffect(() => {
+    if (paramRestaurantId) {
+      setRestaurantId(paramRestaurantId);
+      return;
+    }
+
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user?.restaurantId) {
+          setRestaurantId(data.user.restaurantId);
+        }
+      })
+      .catch(() => {});
+  }, [paramRestaurantId]);
+
+  const previousOrderIdsRef = useRef<Set<string>>(new Set());
+  const initialLoadDoneRef = useRef(false);
+
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       let url = '/api/orders?limit=100';
@@ -39,18 +65,40 @@ function OrdersContent() {
       const res = await fetch(url);
       const json = await res.json();
       if (json.success && json.data) {
-        setOrders(json.data);
+        const fetchedOrders: Order[] = json.data;
+
+        // Si ya cargó inicialmente, verificar si hay un nuevo pedido entrante
+        if (initialLoadDoneRef.current && soundEnabled) {
+          const hasNewPending = fetchedOrders.some(
+            (o) => !previousOrderIdsRef.current.has(o.id) && o.status === 'PENDING'
+          );
+          if (hasNewPending) {
+            console.log('[Orders] 🔔 ¡Nuevo pedido entrante! Disparando sonido...');
+            playNewOrderSound();
+          }
+        }
+
+        previousOrderIdsRef.current = new Set(fetchedOrders.map((o) => o.id));
+        initialLoadDoneRef.current = true;
+        setOrders(fetchedOrders);
       }
     } catch (e) {
       console.error('Error fetching admin orders:', e);
     } finally {
       setLoading(false);
     }
-  };
+  }, [restaurantId, statusFilter, searchTerm, soundEnabled]);
 
   useEffect(() => {
     fetchOrders();
-  }, [statusFilter]);
+  }, [fetchOrders]);
+
+  // Suscripción Realtime con WebSockets y aislamiento multi-tenant
+  useOrdersRealtime({
+    restaurantId,
+    soundEnabled,
+    onOrderChange: fetchOrders,
+  });
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,6 +205,26 @@ function OrdersContent() {
             <option value="DELIVERED">Entregados</option>
             <option value="CANCELLED">Cancelados</option>
           </select>
+
+          <button
+            onClick={() => {
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              if (next) {
+                unlockAudio();
+                playNewOrderSound();
+              }
+            }}
+            title={soundEnabled ? 'Silenciar alertas (Clic para probar timbre)' : 'Activar alertas de sonido'}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition ${
+              soundEnabled
+                ? 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+                : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600'
+            }`}
+          >
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+            <span>{soundEnabled ? 'Sonido ON (Probar)' : 'Sonido OFF'}</span>
+          </button>
 
           <button
             onClick={fetchOrders}

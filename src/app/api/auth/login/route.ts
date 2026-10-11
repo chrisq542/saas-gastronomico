@@ -54,9 +54,13 @@ export async function POST(req: NextRequest) {
     if (user.role === ROLES.SUPERADMIN) {
       redirectUrl = ROUTES.SUPERADMIN.ROOT;
     } else if (user.role === ROLES.STORE_ADMIN) {
-      redirectUrl = user.restaurant?.slug ? ROUTES.TENANT.ADMIN(user.restaurant.slug) : ROUTES.STORE.ORDERS;
+      redirectUrl = user.restaurantId
+        ? `${ROUTES.STORE.ORDERS}?restaurantId=${encodeURIComponent(user.restaurantId)}`
+        : ROUTES.STORE.ORDERS;
     } else if (user.role === ROLES.KITCHEN) {
-      redirectUrl = user.restaurant?.slug ? ROUTES.TENANT.KDS(user.restaurant.slug) : ROUTES.STORE.KDS;
+      redirectUrl = user.restaurantId
+        ? `${ROUTES.STORE.KDS}?restaurantId=${encodeURIComponent(user.restaurantId)}`
+        : ROUTES.STORE.KDS;
     }
 
     const sessionPayload = {

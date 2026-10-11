@@ -146,6 +146,46 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {/* Cuentas de Acceso Rápido / Pruebas */}
+          <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/80 space-y-2 text-left">
+            <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">
+              Accesos Rápidos de Prueba:
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[11px]">
+              <button
+                type="button"
+                onClick={handleQuickMasterFill}
+                className="p-2 rounded-lg bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium text-left transition"
+              >
+                <div className="font-bold text-zinc-950 dark:text-zinc-100 text-[10px]">SUPERADMIN</div>
+                <div className="truncate text-[10px] text-zinc-500">chrisq542@...</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('gerente@sasburger.com');
+                  setPassword('Admin1234!');
+                }}
+                className="p-2 rounded-lg bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium text-left transition"
+              >
+                <div className="font-bold text-emerald-600 dark:text-emerald-400 text-[10px]">STORE ADMIN</div>
+                <div className="truncate text-[10px] text-zinc-500">gerente@sas...</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('cocina@sasburger.com');
+                  setPassword('Admin1234!');
+                }}
+                className="p-2 rounded-lg bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium text-left transition"
+              >
+                <div className="font-bold text-blue-600 dark:text-blue-400 text-[10px]">KITCHEN KDS</div>
+                <div className="truncate text-[10px] text-zinc-500">cocina@sas...</div>
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Back Link */}

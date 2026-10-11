@@ -2,11 +2,12 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Order, OrderStatus } from '@/types';
-import { createClient } from '@/lib/supabase/client';
+import { useOrdersRealtime } from '@/hooks/useOrdersRealtime';
+import { playNewOrderSound, unlockAudio } from '@/lib/utils/sound';
 import { getElapsedMinutes, formatTimeSimple } from '@/lib/utils/formatters';
 import { ThermalTicket80mm } from '@/components/tickets/ThermalTicket80mm';
 import { printThermalTicket } from '@/lib/print/thermal-ticket';
@@ -27,12 +28,33 @@ import {
 
 function KDSContent() {
   const searchParams = useSearchParams();
-  const restaurantId = searchParams.get('restaurantId');
+  const paramRestaurantId = searchParams.get('restaurantId');
+  const [restaurantId, setRestaurantId] = useState<string | null>(paramRestaurantId);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTicketOrder, setSelectedTicketOrder] = useState<Order | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Resolver restaurantId desde sesión si no viene por query param
+  useEffect(() => {
+    if (paramRestaurantId) {
+      setRestaurantId(paramRestaurantId);
+      return;
+    }
+
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user?.restaurantId) {
+          setRestaurantId(data.user.restaurantId);
+        }
+      })
+      .catch(() => {});
+  }, [paramRestaurantId]);
+
+  const previousOrderIdsRef = useRef<Set<string>>(new Set());
+  const initialLoadDoneRef = useRef(false);
 
   // Carga inicial y actualización de pedidos activos
   const fetchOrders = useCallback(async () => {
@@ -43,49 +65,42 @@ function KDSContent() {
       const res = await fetch(url);
       const json = await res.json();
       if (json.success && json.data) {
-        setOrders(json.data);
+        const fetchedOrders: Order[] = json.data;
+
+        // Si ya cargó la primera vez, comprobar si hay pedidos nuevos agregados
+        if (initialLoadDoneRef.current && soundEnabled) {
+          const hasNewPending = fetchedOrders.some(
+            (o) => !previousOrderIdsRef.current.has(o.id) && o.status === 'PENDING'
+          );
+          if (hasNewPending) {
+            console.log('[KDS] 🔔 ¡Nuevo pedido detectado! Disparando sonido...');
+            playNewOrderSound();
+          }
+        }
+
+        // Actualizar referencia de IDs conocidos
+        previousOrderIdsRef.current = new Set(fetchedOrders.map((o) => o.id));
+        initialLoadDoneRef.current = true;
+        setOrders(fetchedOrders);
       }
     } catch (e) {
       console.error('Error fetching KDS orders:', e);
     } finally {
       setLoading(false);
     }
-  }, [restaurantId]);
+  }, [restaurantId, soundEnabled]);
 
-  // Suscripción en Tiempo Real mediante Supabase Realtime
+  // Cargar pedidos al montar o cambiar restaurantId
   useEffect(() => {
     fetchOrders();
+  }, [fetchOrders]);
 
-    try {
-      const supabase = createClient();
-      const channel = supabase
-        .channel('kds-orders-realtime')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'orders' },
-          (payload) => {
-            fetchOrders();
-
-            // Alerta sonora para nuevos pedidos
-            if (payload.eventType === 'INSERT' && soundEnabled) {
-              try {
-                const audio = new Audio(
-                  'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'
-                );
-                audio.play().catch(() => {});
-              } catch {}
-            }
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    } catch (e) {
-      console.warn('Supabase Realtime fallback to periodic poll', e);
-    }
-  }, [fetchOrders, soundEnabled]);
+  // Suscripción en Tiempo Real mediante WebSockets con aislamiento por restaurantId
+  useOrdersRealtime({
+    restaurantId,
+    soundEnabled,
+    onOrderChange: fetchOrders,
+  });
 
   // Actualizar estado del pedido en la cocina
   const handleUpdateStatus = async (orderId: string, nextStatus: OrderStatus) => {
@@ -280,15 +295,23 @@ function KDSContent() {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
+            onClick={() => {
+              const nextState = !soundEnabled;
+              setSoundEnabled(nextState);
+              if (nextState) {
+                unlockAudio();
+                playNewOrderSound();
+              }
+            }}
+            title={soundEnabled ? 'Silenciar alertas (Clic para probar timbre)' : 'Activar alertas de sonido'}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 border transition ${
               soundEnabled
-                ? 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-emerald-600 dark:text-emerald-400'
+                ? 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
                 : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600'
             }`}
           >
             {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-            <span>{soundEnabled ? 'Sonido ON' : 'Sonido OFF'}</span>
+            <span>{soundEnabled ? 'Sonido ON (Probar)' : 'Sonido OFF'}</span>
           </button>
 
           <button
