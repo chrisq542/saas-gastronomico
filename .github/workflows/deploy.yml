@@ -69,6 +69,18 @@ jobs:
               echo "RESEND_FROM_EMAIL=\"seguridad@afxapp.cl\"" >> .env
             fi
 
+            # Asegurar número de pruebas y WhatsApp oficial
+            if grep -q "NEXT_PUBLIC_RESTAURANT_WHATSAPP" .env; then
+              sed -i 's/^NEXT_PUBLIC_RESTAURANT_WHATSAPP=.*/NEXT_PUBLIC_RESTAURANT_WHATSAPP="56967249014"/' .env
+            else
+              echo 'NEXT_PUBLIC_RESTAURANT_WHATSAPP="56967249014"' >> .env
+            fi
+            if grep -q "NEXT_PUBLIC_RESTAURANT_PHONE" .env; then
+              sed -i 's/^NEXT_PUBLIC_RESTAURANT_PHONE=.*/NEXT_PUBLIC_RESTAURANT_PHONE="56967249014"/' .env
+            else
+              echo 'NEXT_PUBLIC_RESTAURANT_PHONE="56967249014"' >> .env
+            fi
+
             echo "📦 Instalando dependencias..."
             npm ci
 
