@@ -1,0 +1,72 @@
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { sendPasswordResetEmail } from '@/lib/mail/resend';
+
+// Duración del código: 15 minutos
+const CODE_EXPIRATION_MINUTES = 15;
+
+export async function POST(req: Request) {
+  try {
+    const { email } = await req.json();
+
+    if (!email || typeof email !== 'string') {
+      return NextResponse.json(
+        { error: 'Debes proporcionar un correo electrónico válido.' },
+        { status: 400 }
+      );
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Verificar si el usuario existe en el sistema
+    const user = await prisma.user.findUnique({
+      where: { email: cleanEmail },
+    });
+
+    // Por seguridad (anti-user enumeration), si el usuario no existe respondemos éxito
+    // genérico para evitar que atacantes adivinen qué correos existen en la base de datos.
+    if (!user) {
+      return NextResponse.json({
+        message: 'Si el correo está registrado, recibirás un código de 6 dígitos en breve.',
+      });
+    }
+
+    // 2. Invalidar códigos previos no utilizados de este correo
+    await prisma.passwordResetToken.updateMany({
+      where: {
+        email: cleanEmail,
+        used: false,
+      },
+      data: {
+        used: true,
+      },
+    });
+
+    // 3. Generar un código numérico aleatorio y criptográficamente seguro de 6 dígitos (100000 - 999999)
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + CODE_EXPIRATION_MINUTES * 60 * 1000);
+
+    // 4. Guardar en base de datos
+    await prisma.passwordResetToken.create({
+      data: {
+        email: cleanEmail,
+        code,
+        expiresAt,
+        attempts: 0,
+      },
+    });
+
+    // 5. Enviar correo vía Resend
+    await sendPasswordResetEmail(cleanEmail, code);
+
+    return NextResponse.json({
+      message: 'Si el correo está registrado, recibirás un código de 6 dígitos en breve.',
+    });
+  } catch (error: any) {
+    console.error('Error en forgot-password:', error);
+    return NextResponse.json(
+      { error: error?.message || 'Error interno al procesar la solicitud.' },
+      { status: 500 }
+    );
+  }
+}

@@ -57,6 +57,18 @@ jobs:
               echo "DIRECT_URL=\"\$DATABASE_URL\"" >> .env
             fi
 
+            # Asegurar variables de Resend para recuperación de contraseña en VPS
+            if [ -n "${{ secrets.RESEND_API_KEY }}" ]; then
+              if grep -q "RESEND_API_KEY" .env; then
+                sed -i 's/^RESEND_API_KEY=.*/RESEND_API_KEY="${{ secrets.RESEND_API_KEY }}"/' .env
+              else
+                echo "RESEND_API_KEY=\"${{ secrets.RESEND_API_KEY }}\"" >> .env
+              fi
+            fi
+            if ! grep -q "RESEND_FROM_EMAIL" .env; then
+              echo "RESEND_FROM_EMAIL=\"seguridad@afxapp.cl\"" >> .env
+            fi
+
             echo "📦 Instalando dependencias..."
             npm ci
 

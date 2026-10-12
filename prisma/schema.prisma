@@ -185,3 +185,16 @@ model OrderItem {
   @@index([productId], name: "idx_order_items_product_id")
   @@map("order_items")
 }
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String   @db.VarChar(255)
+  code      String   @db.VarChar(10)
+  attempts  Int      @default(0)
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([email, code], name: "idx_password_reset_email_code")
+  @@map("password_reset_tokens")
+}

@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { Lock, Mail, ArrowRight, ShieldCheck, UtensilsCrossed, AlertCircle, Loader2 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { ROUTES } from '@/constants';
+import { ForgotPasswordModal } from './_components/ForgotPasswordModal';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -108,9 +110,18 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                Contraseña
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                  Contraseña
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsForgotOpen(true)}
+                  className="text-[11px] text-zinc-500 hover:text-zinc-950 dark:hover:text-zinc-100 transition"
+                >
+                  ¿Olvidaste tu contraseña?
+                </button>
+              </div>
               <div className="relative rounded-lg">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
                   <Lock className="h-3.5 w-3.5" />
@@ -145,6 +156,13 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          {/* Modal de Recuperación de Contraseña */}
+          <ForgotPasswordModal
+            isOpen={isForgotOpen}
+            onClose={() => setIsForgotOpen(false)}
+            initialEmail={email}
+          />
 
           {/* Cuentas de Acceso Rápido / Pruebas */}
           <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/80 space-y-2 text-left">
