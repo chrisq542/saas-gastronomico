@@ -43,11 +43,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickMasterFill = () => {
-    setEmail('chrisq542@gmail.com');
-    setPassword('8Y9nIW1pVlJL');
-  };
-
   return (
     <div className="min-h-screen bg-[#FFFFFF] dark:bg-[#09090B] text-[#09090B] dark:text-[#F4F4F5] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
       {/* Top Bar with ThemeToggle */}
@@ -169,16 +164,7 @@ export default function LoginPage() {
             <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">
               Accesos Rápidos de Prueba:
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-[11px]">
-              <button
-                type="button"
-                onClick={handleQuickMasterFill}
-                className="p-2 rounded-lg bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium text-left transition"
-              >
-                <div className="font-bold text-zinc-950 dark:text-zinc-100 text-[10px]">SUPERADMIN</div>
-                <div className="truncate text-[10px] text-zinc-500">chrisq542@...</div>
-              </button>
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
               <button
                 type="button"
                 onClick={() => {
@@ -188,7 +174,7 @@ export default function LoginPage() {
                 className="p-2 rounded-lg bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium text-left transition"
               >
                 <div className="font-bold text-emerald-600 dark:text-emerald-400 text-[10px]">STORE ADMIN</div>
-                <div className="truncate text-[10px] text-zinc-500">gerente@sas...</div>
+                <div className="truncate text-[10px] text-zinc-500">gerente@sasburger.com</div>
               </button>
 
               <button
@@ -200,7 +186,7 @@ export default function LoginPage() {
                 className="p-2 rounded-lg bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium text-left transition"
               >
                 <div className="font-bold text-blue-600 dark:text-blue-400 text-[10px]">KITCHEN KDS</div>
-                <div className="truncate text-[10px] text-zinc-500">cocina@sas...</div>
+                <div className="truncate text-[10px] text-zinc-500">cocina@sasburger.com</div>
               </button>
             </div>
           </div>
