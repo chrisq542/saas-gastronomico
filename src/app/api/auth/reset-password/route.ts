@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { sendPasswordChangedEmail } from '@/lib/mail/resend';
+import { extractClientGeo } from '@/lib/utils/geo';
 
 const MAX_ATTEMPTS = 5;
 
@@ -119,6 +121,20 @@ export async function POST(req: Request) {
       where: { id: resetRecord.id },
       data: { used: true },
     });
+
+    // 8. Enviar correo de confirmación de cambio con datos de IP/Ubicación y botón de bloqueo de emergencia
+    try {
+      const geo = extractClientGeo(req.headers);
+      
+      // Token temporal para permitir el bloqueo directo de la cuenta si el usuario no fue quien la cambió
+      const lockSignature = Buffer.from(`${user.id}:${resetRecord.id}:${user.createdAt.getTime()}`).toString('base64url');
+      const origin = req.headers.get('origin') || (process.env.NODE_ENV === 'production' ? 'https://afxapp.cl' : 'http://localhost:3000');
+      const lockAccountUrl = `${origin}/api/auth/lock-account?email=${encodeURIComponent(cleanEmail)}&sig=${encodeURIComponent(lockSignature)}`;
+
+      await sendPasswordChangedEmail(cleanEmail, lockAccountUrl, geo);
+    } catch (mailErr) {
+      console.error('[Error enviando correo de confirmación]', mailErr);
+    }
 
     return NextResponse.json({
       message: '¡Contraseña actualizada exitosamente! Ya puedes iniciar sesión con tu nueva contraseña.',

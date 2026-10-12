@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendPasswordResetEmail } from '@/lib/mail/resend';
+import { extractClientGeo } from '@/lib/utils/geo';
 
 // Duración del código: 15 minutos
 const CODE_EXPIRATION_MINUTES = 15;
@@ -17,6 +18,7 @@ export async function POST(req: Request) {
     }
 
     const cleanEmail = email.trim().toLowerCase();
+    const geo = extractClientGeo(req.headers);
 
     // 1. Verificar si el usuario existe en el sistema
     const user = await prisma.user.findUnique({
@@ -56,8 +58,8 @@ export async function POST(req: Request) {
       },
     });
 
-    // 5. Enviar correo vía Resend
-    await sendPasswordResetEmail(cleanEmail, code);
+    // 5. Enviar correo vía Resend con datos de IP y ubicación
+    await sendPasswordResetEmail(cleanEmail, code, geo);
 
     return NextResponse.json({
       message: 'Si el correo está registrado, recibirás un código de 6 dígitos en breve.',

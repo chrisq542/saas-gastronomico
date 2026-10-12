@@ -113,7 +113,12 @@ export function ForgotPasswordModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleModalClose} title="Recuperar Contraseña">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleModalClose}
+      title="Recuperar Contraseña"
+      closeOnBackdropClick={false}
+    >
       <div className="p-6 space-y-5">
         {/* Banner de Error */}
         {error && (

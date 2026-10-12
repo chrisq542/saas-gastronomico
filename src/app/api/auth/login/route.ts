@@ -40,6 +40,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Verificar si la cuenta se encuentra bloqueada por seguridad
+    if (user.isLocked) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'Esta cuenta ha sido bloqueada por motivos de seguridad. Por favor contacta al administrador o escribe a soporte@afxapp.cl para reactivarla.',
+        },
+        { status: 403 }
+      );
+    }
+
     // Verificar contraseña con bcrypt
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {

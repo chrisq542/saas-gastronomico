@@ -10,6 +10,7 @@ interface ModalProps {
   description?: React.ReactNode;
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  closeOnBackdropClick?: boolean;
 }
 
 const maxWidthMap = {
@@ -27,6 +28,7 @@ export default function Modal({
   description,
   children,
   maxWidth = 'lg',
+  closeOnBackdropClick = true,
 }: ModalProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -47,7 +49,7 @@ export default function Modal({
     <div
       role="dialog"
       aria-modal="true"
-      onClick={onClose}
+      onClick={closeOnBackdropClick ? onClose : undefined}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
     >
       <div

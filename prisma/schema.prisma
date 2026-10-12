@@ -65,6 +65,8 @@ model User {
   email        String      @unique @db.VarChar(255)
   passwordHash String      @map("password_hash")
   role         Role        @default(STORE_ADMIN)
+  isLocked     Boolean     @default(false) @map("is_locked")
+  lockedAt     DateTime?   @map("locked_at")
   createdAt    DateTime    @default(now()) @map("created_at")
 
   restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
