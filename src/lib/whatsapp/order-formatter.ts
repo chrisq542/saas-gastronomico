@@ -81,8 +81,22 @@ export function formatOrderToWhatsAppMessage(order: Order, customRestaurantName?
   // Lista de items
   order.items.forEach((item) => {
     msg += `• *${item.quantity}x* ${item.productName} — ${formatCurrency(item.subtotal)}\n`;
+    if (item.options && item.options.length > 0) {
+      item.options.forEach((opt: any) => {
+        const optPrice = Number(opt.price);
+        const optPriceStr = optPrice > 0 ? ` (+${formatCurrency(optPrice)})` : '';
+        const prefix = optPrice > 0 ? '➕' : (opt.name.toLowerCase().startsWith('sin') ? '➖' : '▫️');
+        msg += `   └ ${prefix} ${opt.name}${optPriceStr}\n`;
+      });
+    }
     if (item.notes && item.notes.trim().length > 0) {
-      msg += `   └ _Nota: ${item.notes.trim()}_\n`;
+      // Si las notas contienen el formato [modificadores], extraer solo la instrucción adicional
+      const cleanNote = item.notes.replace(/^\[.*?\]\s*/, '').trim();
+      if (cleanNote) {
+        msg += `   └ 📝 _Nota: ${cleanNote}_\n`;
+      } else if (!item.options || item.options.length === 0) {
+        msg += `   └ 📝 _Nota: ${item.notes.trim()}_\n`;
+      }
     }
   });
 

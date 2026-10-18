@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { UtensilsCrossed, ToggleLeft, ToggleRight, Trash2, Edit, Camera, RefreshCw } from 'lucide-react';
+import { UtensilsCrossed, ToggleLeft, ToggleRight, Trash2, Edit, Camera, RefreshCw, Sparkles } from 'lucide-react';
 import { fileToBase64Optimized } from '@/lib/utils/image';
 import ProductEditModal, { CategoryOption, EditableProduct } from '@/components/shared/ProductEditModal';
+import { ProductOptionsModal } from '@/components/admin/ProductOptionsModal';
 
 interface TenantProductsTabProps {
   tenantId: string;
@@ -35,6 +36,7 @@ export default function TenantProductsTab({
 
   const [editingProduct, setEditingProduct] = useState<EditableProduct | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [selectedProductForOptions, setSelectedProductForOptions] = useState<any | null>(null);
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -316,6 +318,15 @@ export default function TenantProductsTab({
 
                 <div className="flex items-center gap-2 shrink-0">
                   <button
+                    onClick={() => setSelectedProductForOptions(prod)}
+                    className="px-2.5 py-1.5 rounded-xl text-xs font-medium border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/40 hover:bg-emerald-500/10 text-zinc-700 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center gap-1.5 transition"
+                    title="Personalizar ingredientes y agregados (Doble carne, sin cebolla, etc.)"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Opciones & Extras</span>
+                  </button>
+
+                  <button
                     onClick={() => handleOpenEditProduct(prod)}
                     className="px-3 py-1.5 rounded-xl text-xs font-medium border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 transition"
                     title="Editar nombre, precio, foto y características"
@@ -363,6 +374,17 @@ export default function TenantProductsTab({
         onSuccess={fetchProducts}
         showToast={showToast}
       />
+
+      {/* Modal Opciones & Extras (Ingredientes / Modificadores) */}
+      {selectedProductForOptions && (
+        <ProductOptionsModal
+          isOpen={!!selectedProductForOptions}
+          onClose={() => setSelectedProductForOptions(null)}
+          restaurantId={tenantId}
+          product={selectedProductForOptions}
+          onSaved={fetchProducts}
+        />
+      )}
     </div>
   );
 }

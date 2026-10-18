@@ -36,19 +36,19 @@ enum PaymentMethod {
 }
 
 model Restaurant {
-  id           String   @id @default(uuid())
-  slug         String   @unique @db.VarChar(100)
-  name         String   @db.VarChar(150)
-  phone        String   @db.VarChar(20)
-  rut          String?  @db.VarChar(20)
-  logoUrl      String?  @map("logo_url") @db.Text
-  bannerUrl    String?  @map("banner_url") @db.Text
-  address      String?  @db.VarChar(255)
-  customDomain String?  @unique @map("custom_domain") @db.VarChar(255)
-  planType     String?  @default("PRO") @map("plan_type") @db.VarChar(50)
+  id           String    @id @default(uuid())
+  slug         String    @unique @db.VarChar(100)
+  name         String    @db.VarChar(150)
+  phone        String    @db.VarChar(20)
+  rut          String?   @db.VarChar(20)
+  logoUrl      String?   @map("logo_url") @db.Text
+  bannerUrl    String?   @map("banner_url") @db.Text
+  address      String?   @db.VarChar(255)
+  customDomain String?   @unique @map("custom_domain") @db.VarChar(255)
+  planType     String?   @default("PRO") @map("plan_type") @db.VarChar(50)
   planExpiresAt DateTime? @map("plan_expires_at")
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
 
   users      User[]
   categories Category[]
@@ -73,6 +73,19 @@ model User {
 
   @@index([restaurantId], name: "idx_users_restaurant_id")
   @@map("users")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String   @db.VarChar(255)
+  code      String   @db.VarChar(10)
+  attempts  Int      @default(0)
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([email, code], name: "idx_password_reset_email_code")
+  @@map("password_reset_tokens")
 }
 
 model Category {
@@ -105,6 +118,7 @@ model Product {
   restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   category     Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   orderItems   OrderItem[]
+  optionGroups ProductOptionGroup[]
 
   @@index([restaurantId], name: "idx_products_restaurant_id")
   @@index([categoryId], name: "idx_products_category_id")
@@ -178,6 +192,7 @@ model OrderItem {
   quantity  Int      @default(1)
   unitPrice Decimal  @map("unit_price") @db.Decimal(10, 2)
   notes     String?  @db.Text
+  options   Json?    @db.JsonB
   createdAt DateTime @default(now()) @map("created_at")
 
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -188,15 +203,34 @@ model OrderItem {
   @@map("order_items")
 }
 
-model PasswordResetToken {
-  id        String   @id @default(uuid())
-  email     String   @db.VarChar(255)
-  code      String   @db.VarChar(10)
-  attempts  Int      @default(0)
-  expiresAt DateTime @map("expires_at")
-  used      Boolean  @default(false)
-  createdAt DateTime @default(now()) @map("created_at")
+model ProductOptionGroup {
+  id         String          @id @default(uuid())
+  productId  String          @map("product_id")
+  name       String          @db.VarChar(100)
+  minSelect  Int             @default(0) @map("min_select")
+  maxSelect  Int             @default(10) @map("max_select")
+  isRequired Boolean         @default(false) @map("is_required")
+  sortOrder  Int             @default(0) @map("sort_order")
+  createdAt  DateTime        @default(now()) @map("created_at")
 
-  @@index([email, code], name: "idx_password_reset_email_code")
-  @@map("password_reset_tokens")
+  product    Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  options    ProductOption[]
+
+  @@index([productId], name: "idx_product_option_groups_product_id")
+  @@map("product_option_groups")
+}
+
+model ProductOption {
+  id          String             @id @default(uuid())
+  groupId     String             @map("group_id")
+  name        String             @db.VarChar(100)
+  price       Decimal            @default(0.00) @db.Decimal(10, 2)
+  isAvailable Boolean            @default(true) @map("is_available")
+  sortOrder   Int                @default(0) @map("sort_order")
+  createdAt   DateTime           @default(now()) @map("created_at")
+
+  group       ProductOptionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId], name: "idx_product_options_group_id")
+  @@map("product_options")
 }

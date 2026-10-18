@@ -177,6 +177,7 @@ function CheckoutContent() {
           productId: i.product.id,
           quantity: i.quantity,
           notes: i.notes || null,
+          options: i.selectedOptions && i.selectedOptions.length > 0 ? i.selectedOptions : null,
         })),
       };
 
@@ -600,52 +601,68 @@ function CheckoutContent() {
               </div>
             ) : (
               <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-                {items.map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="flex items-start justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 text-xs"
-                  >
-                    <div className="flex-1">
-                      <div className="font-medium text-zinc-950 dark:text-zinc-100 leading-snug">{item.product.name}</div>
-                      <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                        {formatCurrency(item.product.price)} c/u
-                      </div>
-                      {item.notes && (
-                        <div className="text-[11px] text-zinc-500 dark:text-zinc-400 italic mt-0.5">
-                          Nota: {item.notes}
+                {items.map((item) => {
+                  const itemId = item.cartItemId || item.product.id;
+                  const itemUnitPrice = item.unitPrice ?? item.product.price;
+                  return (
+                    <div
+                      key={itemId}
+                      className="flex items-start justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 text-xs"
+                    >
+                      <div className="flex-1">
+                        <div className="font-medium text-zinc-950 dark:text-zinc-100 leading-snug">{item.product.name}</div>
+                        <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                          {formatCurrency(itemUnitPrice)} c/u
                         </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-md bg-zinc-50 dark:bg-zinc-900">
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                          className="p-1 hover:text-zinc-950 dark:hover:text-zinc-100"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="px-2 text-xs font-medium text-zinc-950 dark:text-zinc-100">{item.quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                          className="p-1 hover:text-zinc-950 dark:hover:text-zinc-100"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
+                        {item.selectedOptions && item.selectedOptions.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {item.selectedOptions.map((opt, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 font-medium"
+                              >
+                                {Number(opt.price) > 0 ? `+ ${opt.name} (+${formatCurrency(opt.price)})` : opt.name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {item.notes && (
+                          <div className="text-[11px] text-zinc-500 dark:text-zinc-400 italic mt-0.5">
+                            Nota: {item.notes}
+                          </div>
+                        )}
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => removeItem(item.product.id)}
-                        className="text-zinc-400 hover:text-rose-600 p-1 transition"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-md bg-zinc-50 dark:bg-zinc-900">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(itemId, item.quantity - 1)}
+                            className="p-1 hover:text-zinc-950 dark:hover:text-zinc-100"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="px-2 text-xs font-medium text-zinc-950 dark:text-zinc-100">{item.quantity}</span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(itemId, item.quantity + 1)}
+                            className="p-1 hover:text-zinc-950 dark:hover:text-zinc-100"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => removeItem(itemId)}
+                          className="text-zinc-400 hover:text-rose-600 p-1 transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 

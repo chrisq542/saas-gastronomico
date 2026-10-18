@@ -30,6 +30,14 @@ export async function GET(
         category: {
           select: { id: true, name: true },
         },
+        optionGroups: {
+          orderBy: { sortOrder: 'asc' },
+          include: {
+            options: {
+              orderBy: { sortOrder: 'asc' },
+            },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

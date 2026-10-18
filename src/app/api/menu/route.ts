@@ -37,6 +37,17 @@ export async function GET(request: NextRequest) {
         products: {
           where: { isActive: true },
           orderBy: { name: 'asc' },
+          include: {
+            optionGroups: {
+              orderBy: { sortOrder: 'asc' },
+              include: {
+                options: {
+                  where: { isAvailable: true },
+                  orderBy: { sortOrder: 'asc' },
+                },
+              },
+            },
+          },
         },
       },
     });

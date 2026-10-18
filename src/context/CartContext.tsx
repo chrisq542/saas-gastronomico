@@ -1,20 +1,37 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { CartItem, Product } from '@/types';
+import { CartItem, Product, SelectedProductOption } from '@/types';
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number, notes?: string) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  updateNotes: (productId: string, notes: string) => void;
+  addItem: (
+    product: Product,
+    quantity?: number,
+    notes?: string,
+    selectedOptions?: SelectedProductOption[]
+  ) => void;
+  removeItem: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
+  updateNotes: (itemId: string, notes: string) => void;
   clearCart: () => void;
   totalItems: number;
   subtotal: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+
+function generateCartItemId(
+  productId: string,
+  selectedOptions?: SelectedProductOption[],
+  notes?: string
+): string {
+  const optionsKey = (selectedOptions || [])
+    .map((o) => `${o.id}:${o.price}`)
+    .sort()
+    .join('|');
+  return `${productId}__${optionsKey}__${notes || ''}`;
+}
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -25,7 +42,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const saved = localStorage.getItem('fastfood_cart');
       if (saved) {
-        setItems(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        const normalized = parsed.map((it: CartItem) => {
+          const optionsPrice = (it.selectedOptions || []).reduce(
+            (sum, o) => sum + Number(o.price || 0),
+            0
+          );
+          const unitPrice = it.unitPrice ?? (Number(it.product.price) + optionsPrice);
+          const cartItemId = it.cartItemId || generateCartItemId(it.product.id, it.selectedOptions, it.notes);
+          return {
+            ...it,
+            cartItemId,
+            unitPrice,
+          };
+        });
+        setItems(normalized);
       }
     } catch (e) {
       console.error('Error loading cart from storage', e);
@@ -44,35 +75,57 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [items, isHydrated]);
 
-  const addItem = (product: Product, quantity: number = 1, notes: string = '') => {
+  const addItem = (
+    product: Product,
+    quantity: number = 1,
+    notes: string = '',
+    selectedOptions: SelectedProductOption[] = []
+  ) => {
+    const optionsPrice = (selectedOptions || []).reduce(
+      (sum, o) => sum + Number(o.price || 0),
+      0
+    );
+    const unitPrice = Number(product.price) + optionsPrice;
+    const cartItemId = generateCartItemId(product.id, selectedOptions, notes);
+
     setItems((prev) => {
-      const existingIndex = prev.findIndex((i) => i.product.id === product.id && i.notes === notes);
+      const existingIndex = prev.findIndex((i) => (i.cartItemId || i.product.id) === cartItemId);
       if (existingIndex > -1) {
         const next = [...prev];
         next[existingIndex].quantity += quantity;
         return next;
       }
-      return [...prev, { product, quantity, notes }];
+      return [
+        ...prev,
+        {
+          cartItemId,
+          product,
+          quantity,
+          notes,
+          selectedOptions,
+          unitPrice,
+        },
+      ];
     });
   };
 
-  const removeItem = (productId: string) => {
-    setItems((prev) => prev.filter((i) => i.product.id !== productId));
+  const removeItem = (itemId: string) => {
+    setItems((prev) => prev.filter((i) => (i.cartItemId || i.product.id) !== itemId));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (itemId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeItem(productId);
+      removeItem(itemId);
       return;
     }
     setItems((prev) =>
-      prev.map((i) => (i.product.id === productId ? { ...i, quantity } : i))
+      prev.map((i) => ((i.cartItemId || i.product.id) === itemId ? { ...i, quantity } : i))
     );
   };
 
-  const updateNotes = (productId: string, notes: string) => {
+  const updateNotes = (itemId: string, notes: string) => {
     setItems((prev) =>
-      prev.map((i) => (i.product.id === productId ? { ...i, notes } : i))
+      prev.map((i) => ((i.cartItemId || i.product.id) === itemId ? { ...i, notes } : i))
     );
   };
 
@@ -82,7 +135,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const totalItems = items.reduce((acc, curr) => acc + curr.quantity, 0);
   const subtotal = items.reduce(
-    (acc, curr) => acc + Number(curr.product.price) * curr.quantity,
+    (acc, curr) => acc + (curr.unitPrice ?? Number(curr.product.price)) * curr.quantity,
     0
   );
 

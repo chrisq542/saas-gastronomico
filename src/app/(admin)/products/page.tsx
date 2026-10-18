@@ -20,9 +20,11 @@ import {
   Check,
   AlertCircle,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 import ProductEditModal, { CategoryOption, EditableProduct } from '@/components/shared/ProductEditModal';
 import CategoryEditModal, { EditableCategory } from '@/components/shared/CategoryEditModal';
+import { ProductOptionsModal } from '@/components/admin/ProductOptionsModal';
 
 interface RestaurantOption {
   id: string;
@@ -61,6 +63,9 @@ function ProductsAdminContent() {
   // Modal de edición / creación de categorías
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [selectedCategoryToEdit, setSelectedCategoryToEdit] = useState<EditableCategory | null>(null);
+
+  // Modal de personalización de opciones e ingredientes
+  const [selectedProductForOptions, setSelectedProductForOptions] = useState<any | null>(null);
 
   // Notificaciones Toast
   const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -583,8 +588,17 @@ function ProductsAdminContent() {
                           )}
                         </button>
 
-                        {/* Botones Editar y Eliminar */}
+                        {/* Botones Opciones, Editar y Eliminar */}
                         <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setSelectedProductForOptions(prod)}
+                            className="px-2.5 py-1 rounded-lg text-xs font-medium border border-zinc-200 dark:border-zinc-800 hover:border-emerald-500/40 hover:bg-emerald-500/10 text-zinc-700 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 flex items-center gap-1.5 transition"
+                            title="Personalizar ingredientes y agregados (Doble carne, sin cebolla, etc.)"
+                          >
+                            <Sparkles className="w-3 h-3 text-emerald-500" />
+                            <span>Opciones & Extras</span>
+                          </button>
+
                           <button
                             onClick={() => handleOpenEditProduct(prod)}
                             className="px-2.5 py-1 rounded-lg text-xs font-medium border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 transition"
@@ -634,6 +648,17 @@ function ProductsAdminContent() {
           restaurantId={restaurantId}
           onSuccess={loadCatalog}
           showToast={showToast}
+        />
+      )}
+
+      {/* Modal de Opciones e Ingredientes */}
+      {restaurantId && (
+        <ProductOptionsModal
+          isOpen={!!selectedProductForOptions}
+          onClose={() => setSelectedProductForOptions(null)}
+          restaurantId={restaurantId}
+          product={selectedProductForOptions}
+          onSaved={loadCatalog}
         />
       )}
     </div>

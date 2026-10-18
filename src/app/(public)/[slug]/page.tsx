@@ -62,6 +62,17 @@ export default async function TenantCatalogPage({ params }: { params: { slug: st
           products: {
             where: { isActive: true },
             orderBy: { name: 'asc' },
+            include: {
+              optionGroups: {
+                orderBy: { sortOrder: 'asc' },
+                include: {
+                  options: {
+                    where: { isAvailable: true },
+                    orderBy: { sortOrder: 'asc' },
+                  },
+                },
+              },
+            },
           },
         },
       },
