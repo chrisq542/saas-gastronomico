@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { fileToBase64Optimized } from '@/lib/utils/image';
+import { fileToBase64Optimized, pdfFileToBase64 } from '@/lib/utils/image';
 import {
   UtensilsCrossed,
   Plus,
@@ -31,6 +31,8 @@ import {
   CheckCircle2,
   User,
   Eye,
+  FileText,
+  Loader2,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { ROOT_URL, ROUTES, ROLES } from '@/constants';
@@ -50,6 +52,7 @@ interface Tenant {
   rut?: string | null;
   logoUrl?: string | null;
   bannerUrl?: string | null;
+  menuPdfUrl?: string | null;
   address?: string | null;
   customDomain?: string | null;
   isActive: boolean;
@@ -82,14 +85,17 @@ export default function SuperadminPage() {
   const [rut, setRut] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
   const [bannerUrl, setBannerUrl] = useState('');
+  const [menuPdfUrl, setMenuPdfUrl] = useState('');
   const [address, setAddress] = useState('');
   const [customDomain, setCustomDomain] = useState('');
   const [phone, setPhone] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('Admin1234!');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const logoModalInputRef = useRef<HTMLInputElement>(null);
   const bannerModalInputRef = useRef<HTMLInputElement>(null);
+  const pdfModalInputRef = useRef<HTMLInputElement>(null);
 
   // Formulario de Nuevo Usuario para Tenant
   const [newUserEmail, setNewUserEmail] = useState('');
@@ -148,6 +154,7 @@ export default function SuperadminPage() {
     setRut('');
     setLogoUrl('');
     setBannerUrl('');
+    setMenuPdfUrl('');
     setAddress('');
     setCustomDomain('');
     setPhone('');
@@ -164,6 +171,7 @@ export default function SuperadminPage() {
     setRut(tenant.rut || '');
     setLogoUrl(tenant.logoUrl || '');
     setBannerUrl(tenant.bannerUrl || '');
+    setMenuPdfUrl(tenant.menuPdfUrl || '');
     setAddress(tenant.address || '');
     setCustomDomain(tenant.customDomain || '');
     setPhone(tenant.phone);
@@ -192,6 +200,26 @@ export default function SuperadminPage() {
     }
   };
 
+  const handlePdfFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      showToast('error', 'Por favor selecciona un archivo PDF válido.');
+      return;
+    }
+    setIsUploadingPdf(true);
+    try {
+      const base64 = await pdfFileToBase64(file, 15 * 1024 * 1024);
+      setMenuPdfUrl(base64);
+      showToast('success', 'PDF de carta cargado.');
+    } catch (err: any) {
+      showToast('error', err?.message || 'Error al procesar el archivo PDF.');
+    } finally {
+      setIsUploadingPdf(false);
+      if (pdfModalInputRef.current) pdfModalInputRef.current.value = '';
+    }
+  };
+
   const handleSaveTenant = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !slug.trim() || !phone.trim()) {
@@ -217,6 +245,7 @@ export default function SuperadminPage() {
         rut: rut.trim() || null,
         logoUrl: logoUrl.trim() || null,
         bannerUrl: bannerUrl.trim() || null,
+        menuPdfUrl: menuPdfUrl.trim() || null,
         address: address.trim() || null,
         customDomain: customDomain.trim() || null,
         phone: phone.trim(),
@@ -759,6 +788,74 @@ export default function SuperadminPage() {
                   onChange={(e) => setCustomDomain(e.target.value)}
                   placeholder="tudominio.cl"
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono"
+                />
+              </div>
+
+              {/* Carta / Menú en Formato PDF */}
+              <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/40 space-y-2">
+                <input
+                  ref={pdfModalInputRef}
+                  type="file"
+                  accept="application/pdf"
+                  className="hidden"
+                  onChange={handlePdfFile}
+                />
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold flex items-center gap-1.5">
+                    <FileText className="w-4 h-4 text-rose-500" />
+                    <span>Carta / Menú PDF (Opcional)</span>
+                  </label>
+                  <span className="text-[10px] text-zinc-400">Máx 15MB o URL directa</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => pdfModalInputRef.current?.click()}
+                    disabled={isUploadingPdf}
+                    className="px-3 py-1.5 rounded-lg border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-medium transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {isUploadingPdf ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Cargando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-3.5 h-3.5 text-rose-500" />
+                        <span>{menuPdfUrl ? 'Cambiar archivo PDF...' : 'Subir archivo PDF...'}</span>
+                      </>
+                    )}
+                  </button>
+
+                  {menuPdfUrl && (
+                    <>
+                      <a
+                        href={menuPdfUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-2.5 py-1.5 text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Ver</span>
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => setMenuPdfUrl('')}
+                        className="px-2 py-1 text-xs text-rose-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                      >
+                        Quitar
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <input
+                  type="url"
+                  value={menuPdfUrl.startsWith('data:application/pdf') ? '' : menuPdfUrl}
+                  onChange={(e) => setMenuPdfUrl(e.target.value)}
+                  placeholder="O pega aquí una URL externa (https://.../carta.pdf)"
+                  className="w-full px-3 py-1.5 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-transparent font-mono"
                 />
               </div>
 

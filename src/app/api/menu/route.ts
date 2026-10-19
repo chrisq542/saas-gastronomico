@@ -65,6 +65,7 @@ export async function GET(request: NextRequest) {
             bannerUrl: restaurant.bannerUrl,
             address: restaurant.address,
             customDomain: restaurant.customDomain,
+            menuPdfUrl: restaurant.menuPdfUrl,
           }
         : null,
     });

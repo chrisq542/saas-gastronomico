@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     // 2. Extraer y validar campos
     const body = await req.json();
-    const { name, slug, customDomain, phone, rut, logoUrl, bannerUrl, address, adminEmail, adminPassword } = body;
+    const { name, slug, customDomain, phone, rut, logoUrl, bannerUrl, address, adminEmail, adminPassword, menuPdfUrl } = body;
 
     if (!name || !slug || !phone || !adminEmail || !adminPassword) {
       return NextResponse.json(
@@ -175,6 +175,7 @@ export async function POST(req: NextRequest) {
         logoUrl: logoUrl ? logoUrl.trim() : null,
         bannerUrl: bannerUrl ? bannerUrl.trim() : null,
         address: address ? address.trim() : null,
+        menuPdfUrl: menuPdfUrl ? menuPdfUrl.trim() : null,
         isActive: true,
       };
 
