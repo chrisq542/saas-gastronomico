@@ -19,6 +19,14 @@ export async function GET(
     const order = await prisma.order.findUnique({
       where: { id: params.id },
       include: {
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            phone: true,
+          },
+        },
         customer: {
           include: { addresses: true },
         },
@@ -61,6 +69,14 @@ export async function PATCH(
         ...(validatedData.notes !== undefined ? { notes: validatedData.notes } : {}),
       },
       include: {
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            phone: true,
+          },
+        },
         customer: {
           include: { addresses: true },
         },
