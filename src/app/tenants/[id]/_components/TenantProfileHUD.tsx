@@ -23,6 +23,8 @@ export interface TenantProfileData {
   bannerUrl?: string | null;
   rut?: string | null;
   customDomain?: string | null;
+  menuPdfUrl?: string | null;
+  schedule?: string | null;
   planType?: string | null;
   planExpiresAt?: string | null;
   users?: any[];
@@ -345,11 +347,10 @@ export default function TenantProfileHUD({
                 {tenant.name}
               </h2>
               <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                  tenant.isActive
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${tenant.isActive
                     ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                     : 'bg-rose-500/20 text-rose-400 border-rose-500/40'
-                }`}
+                  }`}
               >
                 {tenant.isActive ? 'Activo' : 'Inactivo'}
               </span>
@@ -363,21 +364,6 @@ export default function TenantProfileHUD({
                 <span>{tenant.address}</span>
               </p>
             )}
-
-            <div className="pt-2 flex items-center gap-4 text-xs text-zinc-400 flex-wrap">
-              <span className="flex items-center gap-1">
-                <span className="font-semibold text-white">WhatsApp:</span> {tenant.phone}
-              </span>
-              <a
-                href={`/${tenant.slug}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-emerald-400 hover:underline flex items-center gap-1 font-medium"
-              >
-                <span>Ver Menú Digital</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
           </div>
         </div>
       </div>

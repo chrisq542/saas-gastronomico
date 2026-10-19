@@ -13,8 +13,15 @@ import {
   Sparkles,
   Search,
   X,
+  FileText,
+  ExternalLink,
+  Clock,
 } from 'lucide-react';
 import ProductCustomizeModal from './_components/ProductCustomizeModal';
+import RestaurantScheduleModal from './_components/RestaurantScheduleModal';
+import Modal from '@/components/ui/Modal';
+import { openPdfInNewTab } from '@/lib/utils/pdf';
+import { getRestaurantOpenStatus, formatScheduleSummary } from '@/lib/utils/schedule';
 
 interface TenantCatalogClientProps {
   restaurant: {
@@ -25,6 +32,8 @@ interface TenantCatalogClientProps {
     rut?: string | null;
     logoUrl?: string | null;
     bannerUrl?: string | null;
+    menuPdfUrl?: string | null;
+    schedule?: string | null;
     address?: string | null;
     customDomain?: string | null;
   };
@@ -41,6 +50,8 @@ export default function TenantCatalogClient({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenCustomize = (product: Product) => {
@@ -175,20 +186,73 @@ export default function TenantCatalogClient({
                   <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
                   <span>Carta Digital Online & Pedidos</span>
                 </span>
+
+                {restaurant.schedule && (
+                  <button
+                    type="button"
+                    onClick={() => setIsScheduleModalOpen(true)}
+                    className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full border transition cursor-pointer shadow-xs active:scale-95 ${getRestaurantOpenStatus(restaurant.schedule).isOpen
+                      ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/25'
+                      : 'bg-zinc-500/10 hover:bg-zinc-500/20 text-zinc-600 dark:text-zinc-400 border-zinc-500/20'
+                      }`}
+                    title="Ver horarios completos de atención"
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${getRestaurantOpenStatus(restaurant.schedule).isOpen
+                        ? 'bg-emerald-500 animate-pulse'
+                        : 'bg-zinc-400'
+                        }`}
+                    />
+                    <span>{getRestaurantOpenStatus(restaurant.schedule).statusText}</span>
+                    <span className="text-[10px] opacity-75 font-normal">
+                      ({getRestaurantOpenStatus(restaurant.schedule).detailText})
+                    </span>
+                  </button>
+                )}
+
+                {restaurant.menuPdfUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setIsPdfModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 transition cursor-pointer shadow-xs active:scale-95"
+                    title="Ver carta completa en PDF"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-rose-500" />
+                    <span>Ver Menú (PDF)</span>
+                  </button>
+                )}
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
                 {restaurant.name}
               </h2>
-              {restaurant.address && (
-                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
-                  <span>📍</span>
-                  <span>{restaurant.address}</span>
-                </p>
-              )}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-0.5">
+                {restaurant.address && (
+                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+                    <span>📍</span>
+                    <span>{restaurant.address}</span>
+                  </p>
+                )}
+              </div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl">
                 Selecciona tus productos favoritos, personaliza tus ingredientes y confirma directamente por WhatsApp.
               </p>
             </div>
+
+            {restaurant.menuPdfUrl && (
+              <div className="self-stretch sm:self-center shrink-0 pt-2 sm:pt-0">
+                <button
+                  type="button"
+                  onClick={() => setIsPdfModalOpen(true)}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 text-xs sm:text-sm font-semibold transition shadow-md active:scale-98 cursor-pointer group"
+                >
+                  <FileText className="w-4 h-4 text-rose-400 dark:text-rose-600 group-hover:scale-110 transition-transform" />
+                  <span>Ver Menú</span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 dark:text-rose-700">
+                    PDF
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -442,6 +506,54 @@ export default function TenantCatalogClient({
         onAddToCart={handleCustomAddToCart}
       />
 
+      {/* Modal Visor de Carta PDF */}
+      {restaurant.menuPdfUrl && (
+        <Modal
+          isOpen={isPdfModalOpen}
+          onClose={() => setIsPdfModalOpen(false)}
+          maxWidth="5xl"
+          title={
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-zinc-950 dark:text-zinc-50 leading-tight">
+                  Carta / Menú de {restaurant.name}
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+                  Visualización oficial de la carta en PDF
+                </p>
+              </div>
+            </div>
+          }
+        >
+          <div className="space-y-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 text-xs">
+              <span className="text-zinc-600 dark:text-zinc-400">
+                Puedes explorar la carta aquí o abrirla en una nueva pestaña para descargarla o ampliarla.
+              </span>
+              <button
+                type="button"
+                onClick={() => openPdfInNewTab(restaurant.menuPdfUrl!, `menu-${restaurant.slug}.pdf`)}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-950 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-medium transition shrink-0 shadow-xs cursor-pointer"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Abrir en nueva pestaña</span>
+              </button>
+            </div>
+
+            <div className="w-full h-[65vh] sm:h-[75vh] rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 relative shadow-inner">
+              <iframe
+                src={`${restaurant.menuPdfUrl}#toolbar=1&navpanes=0`}
+                title={`Carta de ${restaurant.name}`}
+                className="w-full h-full border-none"
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {/* Barra Flotante Inferior de Checkout */}
       {totalItems > 0 && (
         <div className="fixed bottom-4 left-4 right-4 max-w-md mx-auto z-40 animate-in slide-in-from-bottom-5">
@@ -467,6 +579,14 @@ export default function TenantCatalogClient({
           </Link>
         </div>
       )}
+
+      {/* Modal de Horarios de Atención Semanales del Restaurante */}
+      <RestaurantScheduleModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        restaurantName={restaurant.name}
+        scheduleRaw={restaurant.schedule}
+      />
     </div>
   );
 }
