@@ -1,21 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
-import { Product, Category, ProductOptionGroup, ProductOption, SelectedProductOption } from '@/types';
+import { Product, Category, SelectedProductOption } from '@/types';
 import { formatCurrency } from '@/lib/utils/formatters';
 import {
   Plus,
-  Minus,
   ShoppingBag,
   Check,
   ArrowRight,
   Sparkles,
+  Search,
   X,
-  CheckCircle2,
-  Info,
 } from 'lucide-react';
+import ProductCustomizeModal from './_components/ProductCustomizeModal';
 
 interface TenantCatalogClientProps {
   restaurant: {
@@ -39,19 +38,13 @@ export default function TenantCatalogClient({
   const { addItem, totalItems, subtotal } = useCart();
   const [categories] = useState<any[]>(initialCategories);
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<SelectedProductOption[]>([]);
-  const [customQuantity, setCustomQuantity] = useState<number>(1);
-  const [itemNote, setItemNote] = useState<string>('');
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenCustomize = (product: Product) => {
     setSelectedProduct(product);
-    setSelectedOptions([]);
-    setCustomQuantity(1);
-    setItemNote('');
-    setValidationError(null);
   };
 
   const handleQuickAdd = (product: Product) => {
@@ -66,86 +59,76 @@ export default function TenantCatalogClient({
     setTimeout(() => setJustAddedId(null), 1200);
   };
 
-  const handleToggleOption = (group: ProductOptionGroup, option: ProductOption) => {
-    setValidationError(null);
-    const isCurrentlySelected = selectedOptions.some((o) => o.id === option.id);
-
-    if (group.maxSelect === 1) {
-      // Selección única (estilo radio button)
-      const optionsWithoutGroup = selectedOptions.filter((o) => o.groupId !== group.id);
-      if (isCurrentlySelected && !group.isRequired) {
-        // Deseleccionar si es opcional
-        setSelectedOptions(optionsWithoutGroup);
-      } else {
-        setSelectedOptions([
-          ...optionsWithoutGroup,
-          {
-            id: option.id,
-            groupId: group.id,
-            groupName: group.name,
-            name: option.name,
-            price: Number(option.price) || 0,
-          },
-        ]);
-      }
-      return;
-    }
-
-    // Selección múltiple (estilo checkbox con límite maxSelect)
-    if (isCurrentlySelected) {
-      setSelectedOptions((prev) => prev.filter((o) => o.id !== option.id));
-    } else {
-      const currentInGroup = selectedOptions.filter((o) => o.groupId === group.id);
-      if (currentInGroup.length >= group.maxSelect) {
-        return; // Límite alcanzado
-      }
-      setSelectedOptions((prev) => [
-        ...prev,
-        {
-          id: option.id,
-          groupId: group.id,
-          groupName: group.name,
-          name: option.name,
-          price: Number(option.price) || 0,
-        },
-      ]);
-    }
-  };
-
-  const handleCustomAdd = () => {
-    if (!selectedProduct) return;
-
-    // Validar grupos obligatorios
-    if (selectedProduct.optionGroups) {
-      for (const group of selectedProduct.optionGroups) {
-        if (group.isRequired) {
-          const selectedInGroup = selectedOptions.filter((o) => o.groupId === group.id);
-          const minRequired = group.minSelect || 1;
-          if (selectedInGroup.length < minRequired) {
-            setValidationError(`Debes seleccionar al menos ${minRequired} opción en "${group.name}".`);
-            return;
-          }
-        }
-      }
-    }
-
-    addItem(selectedProduct, customQuantity, itemNote, selectedOptions);
-    setJustAddedId(selectedProduct.id);
-    setSelectedProduct(null);
-    setItemNote('');
-    setSelectedOptions([]);
+  const handleCustomAddToCart = (
+    product: Product,
+    quantity: number,
+    note: string,
+    options: SelectedProductOption[]
+  ) => {
+    addItem(product, quantity, note, options);
+    setJustAddedId(product.id);
     setTimeout(() => setJustAddedId(null), 1500);
   };
 
-  const filteredCategories =
-    activeCategoryId === 'all'
-      ? categories
-      : categories.filter((c) => c.id === activeCategoryId);
+  const handleFocusSearch = () => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+      searchInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
-  // Cálculo de precio dinámico en modal
-  const optionsTotal = selectedOptions.reduce((sum, o) => sum + Number(o.price || 0), 0);
-  const singleItemPrice = (selectedProduct ? Number(selectedProduct.price) : 0) + optionsTotal;
-  const modalTotalPrice = singleItemPrice * customQuantity;
+  // Normalizar consulta de búsqueda
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  // Categorías y productos filtrados
+  const { filteredCategories, totalGlobalMatches, totalCategoryMatches } = useMemo(() => {
+    let globalMatches = 0;
+    let categoryMatches = 0;
+
+    // Calcular coincidencias globales (en todo el menú)
+    categories.forEach((cat) => {
+      (cat.products || []).forEach((prod: Product) => {
+        const match =
+          !normalizedQuery ||
+          prod.name.toLowerCase().includes(normalizedQuery) ||
+          (prod.description && prod.description.toLowerCase().includes(normalizedQuery));
+        if (match) globalMatches++;
+      });
+    });
+
+    const categoriesPool =
+      activeCategoryId === 'all'
+        ? categories
+        : categories.filter((c) => c.id === activeCategoryId);
+
+    const filtered = categoriesPool
+      .map((cat) => {
+        if (!normalizedQuery) return cat;
+
+        const matchingProducts = (cat.products || []).filter((prod: Product) => {
+          const matchName = prod.name.toLowerCase().includes(normalizedQuery);
+          const matchDesc = prod.description?.toLowerCase().includes(normalizedQuery);
+          return matchName || matchDesc;
+        });
+
+        categoryMatches += matchingProducts.length;
+
+        return {
+          ...cat,
+          products: matchingProducts,
+        };
+      })
+      .filter((cat) => {
+        // Si hay búsqueda, sólo mostrar categorías con al menos 1 producto
+        return !normalizedQuery || (cat.products && cat.products.length > 0);
+      });
+
+    return {
+      filteredCategories: filtered,
+      totalGlobalMatches: globalMatches,
+      totalCategoryMatches: categoryMatches,
+    };
+  }, [categories, activeCategoryId, normalizedQuery]);
 
   return (
     <div className="space-y-8 pb-24">
@@ -170,19 +153,17 @@ export default function TenantCatalogClient({
               <img
                 src={restaurant.logoUrl}
                 alt={restaurant.name}
-                className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 shadow-lg flex-shrink-0 ${
-                  restaurant.bannerUrl
-                    ? 'border-white dark:border-zinc-900 bg-white dark:bg-zinc-950 ring-2 ring-black/10'
-                    : 'border-zinc-200 dark:border-zinc-700'
-                }`}
+                className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 shadow-lg flex-shrink-0 ${restaurant.bannerUrl
+                  ? 'border-white dark:border-zinc-900 bg-white dark:bg-zinc-950 ring-2 ring-black/10'
+                  : 'border-zinc-200 dark:border-zinc-700'
+                  }`}
               />
             ) : (
               <div
-                className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-zinc-950 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-950 font-bold text-2xl sm:text-3xl shadow-lg flex-shrink-0 ${
-                  restaurant.bannerUrl
-                    ? 'border-2 border-white dark:border-zinc-900 ring-2 ring-black/10'
-                    : ''
-                }`}
+                className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-zinc-950 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-950 font-bold text-2xl sm:text-3xl shadow-lg flex-shrink-0 ${restaurant.bannerUrl
+                  ? 'border-2 border-white dark:border-zinc-900 ring-2 ring-black/10'
+                  : ''
+                  }`}
               >
                 {restaurant.name.charAt(0)}
               </div>
@@ -212,16 +193,84 @@ export default function TenantCatalogClient({
         </div>
       </section>
 
+      {/* Buscador de Productos con Icono de Búsqueda */}
+      {categories.length > 0 && (
+        <div className="relative">
+          <div className="relative flex items-center group">
+            <Search className="w-4 h-4 absolute left-3.5 text-zinc-400 group-focus-within:text-emerald-500 transition-colors pointer-events-none" />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar productos o ingredientes en la carta..."
+              className="w-full pl-10 pr-10 py-3 bg-white dark:bg-[#121215] border border-zinc-200/90 dark:border-zinc-800/90 rounded-2xl text-xs sm:text-sm text-zinc-950 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 shadow-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                title="Limpiar búsqueda"
+                aria-label="Limpiar búsqueda"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Feedback de búsqueda activa */}
+          {normalizedQuery && (
+            <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+                <Search className="w-3.5 h-3.5 text-emerald-500" />
+                <span>
+                  Resultados para <span className="font-semibold text-zinc-900 dark:text-zinc-100">&ldquo;{searchQuery}&rdquo;</span>:
+                </span>
+                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  {activeCategoryId === 'all'
+                    ? `${totalGlobalMatches} ${totalGlobalMatches === 1 ? 'producto' : 'productos'}`
+                    : `${totalCategoryMatches} en esta categoría (${totalGlobalMatches} en total)`}
+                </span>
+              </div>
+
+              {activeCategoryId !== 'all' && totalGlobalMatches > totalCategoryMatches && (
+                <button
+                  type="button"
+                  onClick={() => setActiveCategoryId('all')}
+                  className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
+                >
+                  Buscar en todo el menú ({totalGlobalMatches})
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Selector de Categorías (Sleek Pills) */}
       {categories.length > 0 && (
-        <div className="sticky top-14 z-20 bg-white/95 dark:bg-[#09090B]/95 backdrop-blur-md py-2.5 -mx-4 px-4 overflow-x-auto flex gap-2 border-b border-zinc-200/80 dark:border-zinc-800/80">
+        <div className="sticky top-14 z-20 bg-white/95 dark:bg-[#09090B]/95 backdrop-blur-md py-2.5 -mx-4 px-4 overflow-x-auto flex items-center gap-2 border-b border-zinc-200/80 dark:border-zinc-800/80">
+
+          {/* Acceso rápido a búsqueda en barra sticky si hay texto o para abrir */}
+          <button
+            type="button"
+            onClick={handleFocusSearch}
+            className={`p-1.5 rounded-lg text-xs font-medium transition shrink-0 ml-auto border ${searchQuery
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+              : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 border-zinc-200 dark:border-zinc-800'
+              }`}
+            title="Buscar en la carta"
+            aria-label="Buscar productos"
+          >
+            <Search className="w-3.5 h-3.5" />
+          </button>
           <button
             onClick={() => setActiveCategoryId('all')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap ${
-              activeCategoryId === 'all'
-                ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
-                : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800'
-            }`}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap ${activeCategoryId === 'all'
+              ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
+              : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800'
+              }`}
           >
             Todo el Menú
           </button>
@@ -229,25 +278,63 @@ export default function TenantCatalogClient({
             <button
               key={cat.id}
               onClick={() => setActiveCategoryId(cat.id)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap ${
-                activeCategoryId === cat.id
-                  ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
-                  : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800'
-              }`}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap ${activeCategoryId === cat.id
+                ? 'bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-xs'
+                : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 border border-zinc-200 dark:border-zinc-800'
+                }`}
             >
               {cat.name}
             </button>
           ))}
+
         </div>
       )}
 
-      {/* Estado si el menú está vacío */}
+      {/* Estado si el menú está completamente vacío */}
       {categories.length === 0 && (
         <div className="text-center py-16 bg-white dark:bg-[#121215] rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
           <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
             Este restaurante aún no ha publicado productos en su carta.
           </p>
           <p className="text-xs text-zinc-500 mt-1">Vuelve pronto para ver las novedades.</p>
+        </div>
+      )}
+
+      {/* Estado cuando la búsqueda no arroja ningún resultado */}
+      {normalizedQuery && filteredCategories.length === 0 && (
+        <div className="text-center py-16 bg-white dark:bg-[#121215] rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 p-8 space-y-3 shadow-xs">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 dark:text-zinc-500 border border-zinc-200 dark:border-zinc-800">
+            <Search className="w-5 h-5" />
+          </div>
+          <h4 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+            No encontramos productos para &ldquo;{searchQuery}&rdquo;
+          </h4>
+          <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+            {activeCategoryId !== 'all' && totalGlobalMatches > 0
+              ? 'No hay resultados en la categoría seleccionada, pero sí en otras categorías del menú.'
+              : 'Verifica la ortografía o intenta buscar con palabras más generales (ej: pizza, carne, jugo).'}
+          </p>
+          <div className="pt-2 flex items-center justify-center gap-2">
+            {activeCategoryId !== 'all' && totalGlobalMatches > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveCategoryId('all')}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs transition"
+              >
+                Buscar en todo el menú ({totalGlobalMatches})
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setActiveCategoryId('all');
+              }}
+              className="px-4 py-2 rounded-xl text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
+            >
+              Ver carta completa
+            </button>
+          </div>
         </div>
       )}
 
@@ -317,20 +404,14 @@ export default function TenantCatalogClient({
                       </div>
 
                       <div className="pt-2 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800/80">
-                        <button
-                          onClick={() => handleOpenCustomize(prod)}
-                          className="text-xs text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-200 font-medium underline underline-offset-2 flex items-center gap-1"
-                        >
-                          Personalizar
-                        </button>
+
 
                         <button
                           onClick={() => handleQuickAdd(prod)}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-xs ${
-                            justAddedId === prod.id
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950'
-                          }`}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-xs ${justAddedId === prod.id
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950'
+                            }`}
                         >
                           {justAddedId === prod.id ? (
                             <>
@@ -354,182 +435,12 @@ export default function TenantCatalogClient({
         ))}
       </div>
 
-      {/* Modal de Personalización de Ingredientes y Opciones */}
-      {selectedProduct && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5">
-          <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full max-h-[92vh] flex flex-col shadow-2xl animate-in fade-in zoom-in-95 overflow-hidden">
-            {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-zinc-100 dark:border-zinc-800 flex items-start justify-between bg-zinc-50/50 dark:bg-zinc-900/30">
-              <div className="space-y-1">
-                <h3 className="text-base font-bold text-zinc-950 dark:text-zinc-100 leading-snug">
-                  {selectedProduct.name}
-                </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Base: <span className="font-semibold text-zinc-900 dark:text-zinc-200">{formatCurrency(selectedProduct.price)}</span>
-                  {selectedProduct.description && ` • ${selectedProduct.description}`}
-                </p>
-              </div>
-
-              <button
-                onClick={() => setSelectedProduct(null)}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Error de validación si falta un grupo obligatorio */}
-            {validationError && (
-              <div className="px-5 py-2.5 bg-rose-50 dark:bg-rose-950/40 border-b border-rose-200 dark:border-rose-900/40 text-xs font-medium text-rose-700 dark:text-rose-300 flex items-center gap-2">
-                <Info className="w-4 h-4 shrink-0" />
-                <span>{validationError}</span>
-              </div>
-            )}
-
-            {/* Modal Scrollable Body */}
-            <div className="p-5 overflow-y-auto flex-1 space-y-6">
-              {/* Grupos de Opciones Configurados */}
-              {selectedProduct.optionGroups && selectedProduct.optionGroups.length > 0 ? (
-                selectedProduct.optionGroups.map((group) => {
-                  const selectedInThisGroup = selectedOptions.filter((o) => o.groupId === group.id);
-                  const isMaxReached = group.maxSelect > 1 && selectedInThisGroup.length >= group.maxSelect;
-
-                  return (
-                    <div key={group.id} className="space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                            {group.name}
-                          </h4>
-                          <span className="text-[11px] text-zinc-500">
-                            {group.maxSelect === 1
-                              ? 'Elige 1 opción'
-                              : `Elige hasta ${group.maxSelect} opciones (${selectedInThisGroup.length}/${group.maxSelect})`}
-                          </span>
-                        </div>
-
-                        {group.isRequired ? (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-900/40">
-                            Obligatorio
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                            Opcional
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {group.options.map((option) => {
-                          const isSelected = selectedOptions.some((o) => o.id === option.id);
-                          const isDisabled = !isSelected && isMaxReached;
-
-                          return (
-                            <button
-                              type="button"
-                              key={option.id}
-                              disabled={isDisabled}
-                              onClick={() => handleToggleOption(group, option)}
-                              className={`p-3 rounded-xl border text-left flex items-center justify-between text-xs transition ${
-                                isSelected
-                                  ? 'border-emerald-600 bg-emerald-50/50 dark:border-emerald-500 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 ring-1 ring-emerald-500'
-                                  : isDisabled
-                                  ? 'opacity-40 cursor-not-allowed border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50'
-                                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 hover:border-zinc-300 dark:hover:border-zinc-700 text-zinc-800 dark:text-zinc-200'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <div
-                                  className={`w-4 h-4 rounded ${
-                                    group.maxSelect === 1 ? 'rounded-full' : 'rounded'
-                                  } border flex items-center justify-center transition shrink-0 ${
-                                    isSelected
-                                      ? 'bg-emerald-600 border-emerald-600 text-white'
-                                      : 'border-zinc-300 dark:border-zinc-700'
-                                  }`}
-                                >
-                                  {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
-                                </div>
-                                <span className="font-medium truncate">{option.name}</span>
-                              </div>
-
-                              <span className="font-semibold font-mono text-[11px] shrink-0 text-emerald-600 dark:text-emerald-400 pl-1">
-                                {Number(option.price) > 0 ? `+${formatCurrency(option.price)}` : 'Gratis'}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-xs text-zinc-500 py-1">
-                  Este producto no cuenta con opciones adicionales de agregados. Puedes escribir instrucciones especiales para la cocina abajo:
-                </div>
-              )}
-
-              {/* Instrucciones para cocina */}
-              <div className="space-y-1.5 pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
-                <label className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-                  Instrucciones especiales para cocina (opcional):
-                </label>
-                <textarea
-                  value={itemNote}
-                  onChange={(e) => setItemNote(e.target.value)}
-                  placeholder="Ej: Salsa aparte, carne bien cocida, servilletas extra..."
-                  rows={2}
-                  className="w-full text-xs bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-3 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:ring-1 focus:ring-zinc-950 dark:focus:ring-zinc-100 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Modal Sticky Footer con Cantidad y Subtotal */}
-            <div className="p-4 sm:p-5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/50 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">Cantidad:</span>
-                <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 shadow-xs">
-                  <button
-                    type="button"
-                    onClick={() => setCustomQuantity(Math.max(1, customQuantity - 1))}
-                    className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100"
-                  >
-                    <Minus className="w-3.5 h-3.5" />
-                  </button>
-                  <span className="px-3 text-xs font-semibold text-zinc-950 dark:text-zinc-100">
-                    {customQuantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setCustomQuantity(customQuantity + 1)}
-                    className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setSelectedProduct(null)}
-                  className="flex-1 sm:flex-none px-4 py-2.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-zinc-100 hover:bg-zinc-200/60 dark:hover:bg-zinc-800 rounded-xl transition"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCustomAdd}
-                  className="flex-1 sm:flex-none px-5 py-2.5 text-xs font-semibold bg-zinc-950 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-950 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5"
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                  <span>Agregar al Carrito • {formatCurrency(modalTotalPrice)}</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal Modular de Personalización de Ingredientes y Opciones */}
+      <ProductCustomizeModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onAddToCart={handleCustomAddToCart}
+      />
 
       {/* Barra Flotante Inferior de Checkout */}
       {totalItems > 0 && (
