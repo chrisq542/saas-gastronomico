@@ -46,6 +46,7 @@ model Restaurant {
   address      String?   @db.VarChar(255)
   customDomain String?   @unique @map("custom_domain") @db.VarChar(255)
   menuPdfUrl   String?   @map("menu_pdf_url") @db.Text
+  schedule     String?   @db.Text
   planType     String?   @default("PRO") @map("plan_type") @db.VarChar(50)
   planExpiresAt DateTime? @map("plan_expires_at")
   isActive     Boolean   @default(true) @map("is_active")

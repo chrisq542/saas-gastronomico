@@ -146,6 +146,7 @@ export default async function TenantCatalogPage({ params }: { params: { slug: st
           address: restaurant.address,
           customDomain: restaurant.customDomain,
           menuPdfUrl: restaurant.menuPdfUrl,
+          schedule: (restaurant as any).schedule || null,
         }}
         initialCategories={JSON.parse(JSON.stringify(restaurant.categories))}
       />

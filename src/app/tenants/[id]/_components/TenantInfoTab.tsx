@@ -1,9 +1,26 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Upload, Trash2, ExternalLink, Loader2 } from 'lucide-react';
+import {
+  FileText,
+  Upload,
+  Trash2,
+  ExternalLink,
+  Loader2,
+  Clock,
+  Eye,
+  Calendar,
+} from 'lucide-react';
 import TenantProfileHUD, { TenantProfileData } from './TenantProfileHUD';
+import TenantScheduleModal from './TenantScheduleModal';
 import { pdfFileToBase64 } from '@/lib/utils/image';
+import { openPdfInNewTab } from '@/lib/utils/pdf';
+import {
+  parseSchedule,
+  formatScheduleSummary,
+  DaySchedule,
+} from '@/lib/utils/schedule';
+import Modal from '@/components/ui/Modal';
 
 interface TenantInfoTabProps {
   tenant: TenantProfileData;
@@ -26,8 +43,11 @@ export default function TenantInfoTab({
   const [customDomain, setCustomDomain] = useState(tenant.customDomain || '');
   const [isActive, setIsActive] = useState(tenant.isActive ?? true);
   const [menuPdfUrl, setMenuPdfUrl] = useState(tenant.menuPdfUrl || '');
+  const [schedule, setSchedule] = useState(tenant.schedule || '');
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [isPdfPreviewOpen, setIsPdfPreviewOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -39,6 +59,7 @@ export default function TenantInfoTab({
     setCustomDomain(tenant.customDomain || '');
     setIsActive(tenant.isActive ?? true);
     setMenuPdfUrl(tenant.menuPdfUrl || '');
+    setSchedule(tenant.schedule || '');
   }, [tenant]);
 
   const hasChanges =
@@ -49,7 +70,8 @@ export default function TenantInfoTab({
     rut !== (tenant.rut || '') ||
     customDomain !== (tenant.customDomain || '') ||
     isActive !== (tenant.isActive ?? true) ||
-    menuPdfUrl !== (tenant.menuPdfUrl || '');
+    menuPdfUrl !== (tenant.menuPdfUrl || '') ||
+    schedule !== (tenant.schedule || '');
 
   const handlePdfFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -94,6 +116,7 @@ export default function TenantInfoTab({
           customDomain: customDomain.trim() || null,
           isActive,
           menuPdfUrl: menuPdfUrl.trim() || null,
+          schedule: schedule.trim() || null,
         }),
       });
 
@@ -205,6 +228,87 @@ export default function TenantInfoTab({
               />
             </div>
 
+            {/* Horario de Atención Semanal (7 Días) */}
+            <div className="sm:col-span-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <div>
+                  <label className="text-xs font-semibold flex items-center gap-1.5 text-zinc-900 dark:text-zinc-100">
+                    <Clock className="w-4 h-4 text-emerald-500" />
+                    <span>Horario de Atención Semanal (Lunes a Domingo)</span>
+                  </label>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    Establece la hora de apertura y cierre para cada uno de los 7 días de la semana.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs transition cursor-pointer self-start sm:self-auto shrink-0 active:scale-95"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Configurar Horario (7 Días)</span>
+                </button>
+              </div>
+
+              {/* Tarjeta de Resumen Visual de los 7 Días */}
+              <div className="p-4 rounded-2xl bg-zinc-50/70 dark:bg-zinc-900/50 border border-zinc-200/80 dark:border-zinc-800 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
+                    Resumen de Atención al Cliente:
+                  </span>
+                  <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                    {formatScheduleSummary(schedule)}
+                  </span>
+                </div>
+
+                {/* Grid con los 7 días */}
+                {(() => {
+                  const structured = parseSchedule(schedule);
+                  if (structured) {
+                    return (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 pt-1">
+                        {structured.map((item) => (
+                          <div
+                            key={item.day}
+                            className={`p-2.5 rounded-xl border text-center transition ${item.isOpen
+                              ? 'bg-white dark:bg-zinc-950 border-emerald-500/30 dark:border-emerald-500/20 shadow-2xs'
+                              : 'bg-zinc-100/50 dark:bg-zinc-900/30 border-dashed border-zinc-200 dark:border-zinc-800 opacity-60'
+                              }`}
+                          >
+                            <p className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100">
+                              {item.day.slice(0, 3)}
+                            </p>
+                            {item.isOpen ? (
+                              <div className="mt-1 space-y-0.5 font-mono text-[10px] text-zinc-600 dark:text-zinc-400">
+                                <div className="font-semibold text-zinc-900 dark:text-zinc-200">{item.openTime}</div>
+                                <div className="text-[9px] text-zinc-400 font-sans">a</div>
+                                <div className="font-semibold text-zinc-900 dark:text-zinc-200">{item.closeTime}</div>
+                              </div>
+                            ) : (
+                              <p className="mt-2 text-[10px] text-zinc-400 italic">Cerrado</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div className="text-xs text-zinc-500 italic bg-white dark:bg-zinc-950 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                      <span>{schedule || 'Aún no has configurado los horarios de los 7 días.'}</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsScheduleModalOpen(true)}
+                        className="text-emerald-600 dark:text-emerald-400 font-semibold text-xs hover:underline cursor-pointer"
+                      >
+                        Configurar ahora →
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
             {/* Carta / Menú en Formato PDF */}
             <div className="sm:col-span-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
               <input
@@ -247,15 +351,14 @@ export default function TenantInfoTab({
                     </div>
 
                     <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
-                      <a
-                        href={menuPdfUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 transition"
+                      <button
+                        type="button"
+                        onClick={() => setIsPdfPreviewOpen(true)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 transition cursor-pointer shadow-xs active:scale-95"
                       >
-                        <ExternalLink className="w-3.5 h-3.5" />
+                        <Eye className="w-3.5 h-3.5" />
                         <span>Previsualizar</span>
-                      </a>
+                      </button>
                       <button
                         type="button"
                         onClick={() => pdfInputRef.current?.click()}
@@ -352,6 +455,60 @@ export default function TenantInfoTab({
           </div>
         </form>
       </div>
+
+      {/* Modal de Previsualización de Carta PDF en Admin */}
+      {menuPdfUrl && (
+        <Modal
+          isOpen={isPdfPreviewOpen}
+          onClose={() => setIsPdfPreviewOpen(false)}
+          maxWidth="5xl"
+          title={
+            <div className="flex items-center justify-between gap-4 w-full">
+              {/* Bloque izquierdo: Ícono + Textos */}
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 shrink-0">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-zinc-950 dark:text-zinc-50 leading-tight">
+                    Previsualización de Carta: {name || tenant.name}
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+                    Visor oficial del documento PDF configurado
+                  </p>
+                </div>
+              </div>
+              {/* Botón compacto alineado a la derecha */}
+              <button
+                type="button"
+                onClick={() => openPdfInNewTab(menuPdfUrl, `menu-${slug || tenant.slug}.pdf`)}
+                className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 text-xs rounded-lg bg-zinc-950 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-medium transition cursor-pointer shadow-xs shrink-0"
+              >
+                <ExternalLink className="w-3 h-3" />
+                <span>Abrir en nueva pestaña</span>
+              </button>
+            </div>
+          }
+        >
+          <div className="space-y-3.5">
+            <div className="w-full h-[65vh] sm:h-[75vh] rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 relative shadow-inner">
+              <iframe
+                src={`${menuPdfUrl}#toolbar=1&navpanes=0`}
+                title={`Previsualización PDF de ${name || tenant.name}`}
+                className="w-full h-full border-none"
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal de Configuración de Horario Semanal (7 Días) */}
+      <TenantScheduleModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        currentScheduleRaw={schedule}
+        onSave={(newSchedule) => setSchedule(newSchedule)}
+      />
     </div>
   );
 }

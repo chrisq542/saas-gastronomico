@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { fileToBase64Optimized, pdfFileToBase64 } from '@/lib/utils/image';
+import { openPdfInNewTab } from '@/lib/utils/pdf';
 import {
   UtensilsCrossed,
   Plus,
@@ -33,6 +34,7 @@ import {
   Eye,
   FileText,
   Loader2,
+  Clock,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { ROOT_URL, ROUTES, ROLES } from '@/constants';
@@ -53,6 +55,7 @@ interface Tenant {
   logoUrl?: string | null;
   bannerUrl?: string | null;
   menuPdfUrl?: string | null;
+  schedule?: string | null;
   address?: string | null;
   customDomain?: string | null;
   isActive: boolean;
@@ -86,6 +89,7 @@ export default function SuperadminPage() {
   const [logoUrl, setLogoUrl] = useState('');
   const [bannerUrl, setBannerUrl] = useState('');
   const [menuPdfUrl, setMenuPdfUrl] = useState('');
+  const [schedule, setSchedule] = useState('');
   const [address, setAddress] = useState('');
   const [customDomain, setCustomDomain] = useState('');
   const [phone, setPhone] = useState('');
@@ -155,6 +159,7 @@ export default function SuperadminPage() {
     setLogoUrl('');
     setBannerUrl('');
     setMenuPdfUrl('');
+    setSchedule('');
     setAddress('');
     setCustomDomain('');
     setPhone('');
@@ -172,6 +177,7 @@ export default function SuperadminPage() {
     setLogoUrl(tenant.logoUrl || '');
     setBannerUrl(tenant.bannerUrl || '');
     setMenuPdfUrl(tenant.menuPdfUrl || '');
+    setSchedule(tenant.schedule || '');
     setAddress(tenant.address || '');
     setCustomDomain(tenant.customDomain || '');
     setPhone(tenant.phone);
@@ -246,6 +252,7 @@ export default function SuperadminPage() {
         logoUrl: logoUrl.trim() || null,
         bannerUrl: bannerUrl.trim() || null,
         menuPdfUrl: menuPdfUrl.trim() || null,
+        schedule: schedule.trim() || null,
         address: address.trim() || null,
         customDomain: customDomain.trim() || null,
         phone: phone.trim(),
@@ -791,6 +798,24 @@ export default function SuperadminPage() {
                 />
               </div>
 
+              {/* Horario de Atención */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-medium flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Horario de Atención (Opcional)</span>
+                  </label>
+                  <span className="text-[10px] text-zinc-400">Visible para clientes</span>
+                </div>
+                <textarea
+                  rows={2}
+                  value={schedule}
+                  onChange={(e) => setSchedule(e.target.value)}
+                  placeholder="Ej: Lunes a Domingo: 12:00 a 23:00 hrs"
+                  className="w-full px-3 py-1.5 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-transparent focus:ring-2 focus:ring-emerald-500 focus:outline-none resize-none leading-relaxed"
+                />
+              </div>
+
               {/* Carta / Menú en Formato PDF */}
               <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/40 space-y-2">
                 <input
@@ -830,19 +855,18 @@ export default function SuperadminPage() {
 
                   {menuPdfUrl && (
                     <>
-                      <a
-                        href={menuPdfUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-2.5 py-1.5 text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                      <button
+                        type="button"
+                        onClick={() => openPdfInNewTab(menuPdfUrl, `menu-${slug || 'tenant'}.pdf`)}
+                        className="px-2.5 py-1.5 text-xs text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         <span>Ver</span>
-                      </a>
+                      </button>
                       <button
                         type="button"
                         onClick={() => setMenuPdfUrl('')}
-                        className="px-2 py-1 text-xs text-rose-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                        className="px-2 py-1 text-xs text-rose-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
                       >
                         Quitar
                       </button>

@@ -15,9 +15,13 @@ import {
   X,
   FileText,
   ExternalLink,
+  Clock,
 } from 'lucide-react';
 import ProductCustomizeModal from './_components/ProductCustomizeModal';
+import RestaurantScheduleModal from './_components/RestaurantScheduleModal';
 import Modal from '@/components/ui/Modal';
+import { openPdfInNewTab } from '@/lib/utils/pdf';
+import { getRestaurantOpenStatus, formatScheduleSummary } from '@/lib/utils/schedule';
 
 interface TenantCatalogClientProps {
   restaurant: {
@@ -29,6 +33,7 @@ interface TenantCatalogClientProps {
     logoUrl?: string | null;
     bannerUrl?: string | null;
     menuPdfUrl?: string | null;
+    schedule?: string | null;
     address?: string | null;
     customDomain?: string | null;
   };
@@ -46,6 +51,7 @@ export default function TenantCatalogClient({
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenCustomize = (product: Product) => {
@@ -180,6 +186,30 @@ export default function TenantCatalogClient({
                   <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
                   <span>Carta Digital Online & Pedidos</span>
                 </span>
+
+                {restaurant.schedule && (
+                  <button
+                    type="button"
+                    onClick={() => setIsScheduleModalOpen(true)}
+                    className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full border transition cursor-pointer shadow-xs active:scale-95 ${getRestaurantOpenStatus(restaurant.schedule).isOpen
+                      ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/25'
+                      : 'bg-zinc-500/10 hover:bg-zinc-500/20 text-zinc-600 dark:text-zinc-400 border-zinc-500/20'
+                      }`}
+                    title="Ver horarios completos de atención"
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${getRestaurantOpenStatus(restaurant.schedule).isOpen
+                        ? 'bg-emerald-500 animate-pulse'
+                        : 'bg-zinc-400'
+                        }`}
+                    />
+                    <span>{getRestaurantOpenStatus(restaurant.schedule).statusText}</span>
+                    <span className="text-[10px] opacity-75 font-normal">
+                      ({getRestaurantOpenStatus(restaurant.schedule).detailText})
+                    </span>
+                  </button>
+                )}
+
                 {restaurant.menuPdfUrl && (
                   <button
                     type="button"
@@ -195,12 +225,14 @@ export default function TenantCatalogClient({
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
                 {restaurant.name}
               </h2>
-              {restaurant.address && (
-                <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-1">
-                  <span>📍</span>
-                  <span>{restaurant.address}</span>
-                </p>
-              )}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-0.5">
+                {restaurant.address && (
+                  <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">
+                    <span>📍</span>
+                    <span>{restaurant.address}</span>
+                  </p>
+                )}
+              </div>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-2xl">
                 Selecciona tus productos favoritos, personaliza tus ingredientes y confirma directamente por WhatsApp.
               </p>
@@ -501,16 +533,14 @@ export default function TenantCatalogClient({
               <span className="text-zinc-600 dark:text-zinc-400">
                 Puedes explorar la carta aquí o abrirla en una nueva pestaña para descargarla o ampliarla.
               </span>
-              <a
-                href={restaurant.menuPdfUrl}
-                target="_blank"
-                rel="noreferrer"
-                download={`menu-${restaurant.slug}.pdf`}
-                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-950 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-medium transition shrink-0 shadow-xs"
+              <button
+                type="button"
+                onClick={() => openPdfInNewTab(restaurant.menuPdfUrl!, `menu-${restaurant.slug}.pdf`)}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-950 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-medium transition shrink-0 shadow-xs cursor-pointer"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
                 <span>Abrir en nueva pestaña</span>
-              </a>
+              </button>
             </div>
 
             <div className="w-full h-[65vh] sm:h-[75vh] rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 relative shadow-inner">
@@ -549,6 +579,14 @@ export default function TenantCatalogClient({
           </Link>
         </div>
       )}
+
+      {/* Modal de Horarios de Atención Semanales del Restaurante */}
+      <RestaurantScheduleModal
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        restaurantName={restaurant.name}
+        scheduleRaw={restaurant.schedule}
+      />
     </div>
   );
 }

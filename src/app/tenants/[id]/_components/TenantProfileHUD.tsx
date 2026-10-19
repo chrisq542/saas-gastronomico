@@ -24,6 +24,7 @@ export interface TenantProfileData {
   rut?: string | null;
   customDomain?: string | null;
   menuPdfUrl?: string | null;
+  schedule?: string | null;
   planType?: string | null;
   planExpiresAt?: string | null;
   users?: any[];
