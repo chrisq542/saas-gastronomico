@@ -1,0 +1,5 @@
+# Forzar terminaciones de línea Unix (LF) en archivos críticos para Linux/CI
+* text=auto
+.github/workflows/* text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf
