@@ -7,9 +7,10 @@ import {
   UtensilsCrossed,
   Users,
   CreditCard,
+  TrendingUp,
 } from 'lucide-react';
 
-export type TenantTabType = 'info' | 'categories' | 'products' | 'users' | 'subscription';
+export type TenantTabType = 'info' | 'sales' | 'categories' | 'products' | 'users' | 'subscription';
 
 interface TenantSideMenuProps {
   activeTab: TenantTabType;
@@ -17,6 +18,7 @@ interface TenantSideMenuProps {
   categoriesCount: number;
   productsCount: number;
   usersCount: number;
+  ordersCount?: number;
 }
 
 export default function TenantSideMenu({
@@ -25,6 +27,7 @@ export default function TenantSideMenu({
   categoriesCount,
   productsCount,
   usersCount,
+  ordersCount,
 }: TenantSideMenuProps) {
   const menuItems = [
     {
@@ -32,6 +35,12 @@ export default function TenantSideMenu({
       label: 'Información General',
       icon: Info,
       badge: null,
+    },
+    {
+      id: 'sales' as const,
+      label: 'Ventas & Métricas',
+      icon: TrendingUp,
+      badge: ordersCount !== undefined && ordersCount > 0 ? ordersCount : null,
     },
     {
       id: 'categories' as const,

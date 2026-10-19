@@ -26,6 +26,12 @@ export interface TenantProfileData {
   planType?: string | null;
   planExpiresAt?: string | null;
   users?: any[];
+  _count?: {
+    products?: number;
+    categories?: number;
+    orders?: number;
+    users?: number;
+  };
 }
 
 interface TenantProfileHUDProps {

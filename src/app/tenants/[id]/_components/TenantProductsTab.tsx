@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { UtensilsCrossed, ToggleLeft, ToggleRight, Trash2, Edit, Camera, RefreshCw, Sparkles } from 'lucide-react';
+import React, { useState, useRef, useMemo } from 'react';
+import { UtensilsCrossed, ToggleLeft, ToggleRight, Trash2, Edit, Camera, RefreshCw, Sparkles, Search, X } from 'lucide-react';
 import { fileToBase64Optimized } from '@/lib/utils/image';
 import ProductEditModal, { CategoryOption, EditableProduct } from '@/components/shared/ProductEditModal';
 import { ProductOptionsModal } from '@/components/admin/ProductOptionsModal';
@@ -37,6 +37,24 @@ export default function TenantProductsTab({
   const [editingProduct, setEditingProduct] = useState<EditableProduct | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [selectedProductForOptions, setSelectedProductForOptions] = useState<any | null>(null);
+
+  // Filtros de búsqueda en la lista de productos
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategoryId, setFilterCategoryId] = useState('ALL');
+
+  // Filtrado reactivo de productos por texto y categoría
+  const filteredProducts = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return products.filter((prod) => {
+      const matchSearch =
+        !q ||
+        prod.name.toLowerCase().includes(q) ||
+        (prod.description && prod.description.toLowerCase().includes(q));
+      const matchCat =
+        filterCategoryId === 'ALL' || prod.categoryId === filterCategoryId;
+      return matchSearch && matchCat;
+    });
+  }, [products, searchQuery, filterCategoryId]);
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -275,18 +293,79 @@ export default function TenantProductsTab({
 
       {/* Listado de Productos */}
       <div className="bg-white dark:bg-[#121215] border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-xs space-y-4">
-        <h3 className="text-base font-bold">Catálogo de Productos ({products.length})</h3>
-        <p className="text-xs text-zinc-500">
-          Al desactivar un producto, se ocultará inmediatamente de la carta del restaurant.
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/80">
+          <div>
+            <h3 className="text-base font-bold text-zinc-950 dark:text-zinc-100">
+              Catálogo de Productos ({filteredProducts.length}{filteredProducts.length !== products.length ? ` de ${products.length}` : ''})
+            </h3>
+            <p className="text-xs text-zinc-500">
+              Al desactivar un producto, se ocultará inmediatamente de la carta del restaurant.
+            </p>
+          </div>
+
+          {/* Barra de búsqueda con icono y selector de categoría */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative min-w-[220px] flex-1 sm:flex-none">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-400 pointer-events-none" />
+              <input
+                type="text"
+                placeholder="Buscar por nombre o descripción..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-8 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-950 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                  title="Borrar búsqueda"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {categories.length > 0 && (
+              <select
+                value={filterCategoryId}
+                onChange={(e) => setFilterCategoryId(e.target.value)}
+                className="px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none cursor-pointer"
+              >
+                <option value="ALL">Todas las Categorías</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </div>
 
         {loadingProducts ? (
           <div className="py-8 text-center text-xs text-zinc-500">Cargando productos...</div>
         ) : products.length === 0 ? (
           <p className="text-xs text-zinc-500 py-4 text-center">No hay productos creados en este local.</p>
+        ) : filteredProducts.length === 0 ? (
+          <div className="py-8 text-center space-y-2">
+            <p className="text-xs text-zinc-500">
+              No se encontraron productos que coincidan con la búsqueda.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setFilterCategoryId('ALL');
+              }}
+              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+            >
+              Restablecer filtros
+            </button>
+          </div>
         ) : (
           <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {products.map((prod) => (
+            {filteredProducts.map((prod) => (
               <div key={prod.id} className="py-3.5 flex items-center justify-between text-xs gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   {prod.imageUrl ? (

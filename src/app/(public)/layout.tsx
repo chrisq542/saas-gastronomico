@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { ShoppingBag, UtensilsCrossed, PhoneCall, ShieldCheck, ArrowRight } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { formatCurrency, cleanPhoneNumber } from '@/lib/utils/formatters';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { ROOT_URL, ROUTES, ROLES } from '@/constants';
 
@@ -16,6 +16,12 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
   // Por defecto se asume Vista del Cliente (isSaaSRoot = false) para evitar parpadeos en recargas
   const [isSaaSRoot, setIsSaaSRoot] = useState(false);
   const [userSession, setUserSession] = useState<any>(null);
+  const [tenantPhone, setTenantPhone] = useState<string>('');
+
+  const segments = pathname.split('/').filter(Boolean);
+  const currentSlug = segments[0] && !['checkout', 'login', 'superadmin', 'tenants', 'kds', 'orders', 'order-status'].includes(segments[0])
+    ? segments[0]
+    : '';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -40,10 +46,22 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
         }
       })
       .catch(() => { });
-  }, []);
+
+    // Si estamos en un tenant, obtener su teléfono para el enlace de WhatsApp
+    if (currentSlug) {
+      fetch(`/api/menu?slug=${encodeURIComponent(currentSlug)}`)
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.success && res.restaurant?.phone) {
+            setTenantPhone(res.restaurant.phone);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [currentSlug]);
 
   const isSaaSIndex = pathname === '/' && isSaaSRoot;
-  const restaurantPhone = process.env.NEXT_PUBLIC_RESTAURANT_WHATSAPP || '56912345678';
+  const restaurantPhone = cleanPhoneNumber(tenantPhone || process.env.NEXT_PUBLIC_RESTAURANT_WHATSAPP || '56912345678');
 
   // 1. Layout para el Portal Comercial / Landing SaaS (Solo si estamos 100% en el dominio raíz)
   if (isSaaSIndex) {
@@ -131,11 +149,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
   }
 
   // 2. Layout Limpio por Defecto para Vista de Cliente / Comensales (Subdominios o /[slug])
-  const segments = pathname.split('/').filter(Boolean);
-  const currentSlug = segments[0] && !['checkout', 'login', 'superadmin', 'tenants', 'kds', 'orders'].includes(segments[0])
-    ? segments[0]
-    : '';
-
   const tenantHomeLink = currentSlug ? `/${currentSlug}` : ROUTES.HOME;
 
   return (
