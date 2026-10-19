@@ -180,9 +180,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode; 
               <UtensilsCrossed className="w-4 h-4" />
             </div>
             <div>
-              <h1 className="font-semibold text-sm text-zinc-950 dark:text-zinc-100 leading-tight tracking-tight">
+              <span className="font-semibold text-sm text-zinc-950 dark:text-zinc-100 leading-tight tracking-tight block">
                 Menú Digital
-              </h1>
+              </span>
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400">Carta en Línea</p>
             </div>
           </Link>

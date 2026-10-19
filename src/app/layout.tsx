@@ -1,11 +1,62 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { BASE_URL, SEO_CONFIG, SAAS_STRUCTURED_DATA } from '@/constants/seo';
 
 export const metadata: Metadata = {
-  title: 'FastFood SaaS - Gestión Multi-Tenant, KDS & Menú Digital',
-  description: 'Plataforma SaaS para restaurantes con KDS en tiempo real, menú digital y comanda térmica de 80mm.',
+  metadataBase: new URL(BASE_URL),
+  title: {
+    default: SEO_CONFIG.defaultTitle,
+    template: SEO_CONFIG.titleTemplate,
+  },
+  description: SEO_CONFIG.defaultDescription,
+  keywords: [...SEO_CONFIG.keywords],
+  authors: [{ name: SEO_CONFIG.author, url: BASE_URL }],
+  creator: SEO_CONFIG.author,
+  publisher: SEO_CONFIG.siteName,
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: SEO_CONFIG.defaultTitle,
+    description: SEO_CONFIG.defaultDescription,
+    url: BASE_URL,
+    siteName: SEO_CONFIG.siteName,
+    locale: SEO_CONFIG.locale,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SEO_CONFIG.defaultTitle,
+    description: SEO_CONFIG.defaultDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  category: 'technology',
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -16,6 +67,12 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(SAAS_STRUCTURED_DATA),
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
