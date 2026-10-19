@@ -81,8 +81,13 @@ jobs:
               echo 'NEXT_PUBLIC_RESTAURANT_PHONE="56967249014"' >> .env
             fi
 
-            echo "📦 Instalando dependencias..."
-            npm ci
+            echo "📦 Instalando dependencias de forma segura..."
+            # Evita que npm ci borre agresivamente node_modules mientras la app está corriendo
+            if ! npm install --prefer-offline --no-audit; then
+              echo "⚠️ Inconsistencia detectada en node_modules. Limpiando de forma segura y reintentando..."
+              rm -rf node_modules
+              npm install --no-audit
+            fi
 
             echo "🗄️ Generando Prisma Client y sincronizando base de datos..."
             npx prisma generate
@@ -91,9 +96,10 @@ jobs:
             echo "🏗️ Compilando Next.js..."
             npm run build
 
-            echo "🔄 Reiniciando aplicación en PM2 en el puerto $APP_PORT..."
+            echo "🔄 Recargando aplicación en PM2 en el puerto $APP_PORT..."
             if pm2 describe "$APP_NAME" > /dev/null 2>&1; then
-              pm2 restart "$APP_NAME" --update-env
+              # Intenta recarga suave sin tiempo de inactividad; si falla ejecuta restart
+              pm2 reload "$APP_NAME" --update-env || pm2 restart "$APP_NAME" --update-env
             else
               pm2 start npm --name "$APP_NAME" -- start -- -p "$APP_PORT"
             fi
@@ -101,4 +107,4 @@ jobs:
             echo "💾 Guardando estado de PM2..."
             pm2 save
 
-            echo "✅ ¡Despliegue completado con éxito!"
+            echo "✅ ¡Despliegado con éxito PAPUUUUUUUUU!"  
