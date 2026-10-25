@@ -125,20 +125,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-      return [
-        ...prev,
-        {
-          cartItemId,
-          product,
-          quantity,
-          notes,
-          selectedOptions,
-          unitPrice,
-        },
-      ];
-    });
-  };
-
   const removeItem = (itemId: string) => {
     setItems((prev) => prev.filter((i) => (i.cartItemId || i.product.id) !== itemId));
   };

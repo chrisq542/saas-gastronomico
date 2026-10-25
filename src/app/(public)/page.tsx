@@ -299,8 +299,9 @@ export default function SaaSIndexPage() {
                 <ExternalLink className="w-3 h-3 opacity-70" />
               </Link>
 
-              <Link
-                href="/kds"
+              <button
+                type="button"
+                onClick={() => launchDemoSandbox('KDS')}
                 className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 font-medium text-xs px-4 py-2.5 rounded-xl transition"
               >
                 {demoLoading === 'KDS' ? (
@@ -312,8 +313,9 @@ export default function SaaSIndexPage() {
                 <ArrowRight className="w-3 h-3 opacity-60" />
               </button>
 
-              <Link
-                href="/orders"
+              <button
+                type="button"
+                onClick={() => launchDemoSandbox('ORDERS')}
                 className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 font-medium text-xs px-4 py-2.5 rounded-xl transition"
               >
                 {demoLoading === 'ORDERS' ? (
