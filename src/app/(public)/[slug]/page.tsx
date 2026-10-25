@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import TenantCatalogClient from './TenantCatalogClient';
@@ -8,25 +9,26 @@ import { BASE_URL } from '@/constants/seo';
 
 export const revalidate = 30;
 
-const getRestaurantBySlug = cache(async (slug: string) => {
-  if (!slug) return null;
-  return prisma.restaurant.findUnique({
-    where: { slug },
-    include: {
-      categories: {
-        where: { isActive: true },
-        orderBy: { sortOrder: 'asc' },
-        include: {
-          products: {
-            where: { isActive: true },
-            orderBy: { name: 'asc' },
-            include: {
-              optionGroups: {
-                orderBy: { sortOrder: 'asc' },
-                include: {
-                  options: {
-                    where: { isAvailable: true },
-                    orderBy: { sortOrder: 'asc' },
+const fetchRestaurantFromDb = unstable_cache(
+  async (slug: string) => {
+    return prisma.restaurant.findUnique({
+      where: { slug },
+      include: {
+        categories: {
+          where: { isActive: true },
+          orderBy: { sortOrder: 'asc' },
+          include: {
+            products: {
+              where: { isActive: true },
+              orderBy: { name: 'asc' },
+              include: {
+                optionGroups: {
+                  orderBy: { sortOrder: 'asc' },
+                  include: {
+                    options: {
+                      where: { isAvailable: true },
+                      orderBy: { sortOrder: 'asc' },
+                    },
                   },
                 },
               },
@@ -34,8 +36,15 @@ const getRestaurantBySlug = cache(async (slug: string) => {
           },
         },
       },
-    },
-  });
+    });
+  },
+  ['tenant-catalog-by-slug'],
+  { revalidate: 30, tags: ['tenant-catalog'] }
+);
+
+const getRestaurantBySlug = cache(async (slug: string) => {
+  if (!slug) return null;
+  return fetchRestaurantFromDb(slug);
 });
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
