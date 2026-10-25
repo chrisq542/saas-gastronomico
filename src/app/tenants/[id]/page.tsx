@@ -19,6 +19,7 @@ import { ROUTES } from '@/constants/routes';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import TenantSideMenu, { TenantTabType } from './_components/TenantSideMenu';
 import TenantInfoTab from './_components/TenantInfoTab';
+import TenantSalesTab from './_components/TenantSalesTab';
 import TenantCategoriesTab from './_components/TenantCategoriesTab';
 import TenantProductsTab from './_components/TenantProductsTab';
 import TenantUsersTab, { TenantUser } from './_components/TenantUsersTab';
@@ -273,6 +274,7 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
             categoriesCount={categories.length}
             productsCount={products.length}
             usersCount={tenantUsers.length}
+            ordersCount={tenant._count?.orders || 0}
           />
 
           {/* Panel Principal de Contenido */}
@@ -283,6 +285,15 @@ export default function TenantDetailPage({ params }: { params: { id: string } })
                 tenant={tenant}
                 tenantId={tenantId}
                 onUpdateSuccess={fetchTenantDetail}
+                showToast={showToast}
+              />
+            )}
+
+            {/* TAB: VENTAS & MÉTRICAS (DASHBOARD) */}
+            {activeTab === 'sales' && (
+              <TenantSalesTab
+                tenantId={tenantId}
+                tenantName={tenant.name}
                 showToast={showToast}
               />
             )}

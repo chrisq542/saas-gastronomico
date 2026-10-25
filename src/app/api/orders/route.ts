@@ -39,6 +39,18 @@ const createOrderSchema = z.object({
         productId: z.string(),
         quantity: z.number().int().min(1),
         notes: z.string().optional().nullable(),
+        options: z
+          .array(
+            z.object({
+              id: z.string(),
+              groupId: z.string().optional(),
+              groupName: z.string().optional(),
+              name: z.string(),
+              price: z.number(),
+            })
+          )
+          .optional()
+          .nullable(),
       })
     )
     .min(1, 'El pedido debe incluir al menos un producto'),
@@ -232,16 +244,30 @@ export async function POST(request: NextRequest) {
 
         let subtotal = 0;
         const orderItemsData = data.items.map((item) => {
-          const prod = productMap.get(item.productId)!;
-          const priceNum = Number(prod.price);
+const prod = productMap.get(item.productId);
+          const basePrice = prod ? Number(prod.price) : 8990;
+          const optionsPrice = (item.options || []).reduce(
+            (sum, o) => sum + (Number(o.price) || 0),
+            0
+          );
+          const priceNum = basePrice + optionsPrice;
           const itemSubtotal = priceNum * item.quantity;
           subtotal += itemSubtotal;
+
+          let fullNotes = item.notes || '';
+          if (item.options && item.options.length > 0) {
+            const modsText = item.options
+              .map((o) => (o.price > 0 ? `+ ${o.name} ($${o.price})` : o.name))
+              .join(', ');
+            fullNotes = fullNotes ? `[${modsText}] ${fullNotes}` : `[${modsText}]`;
+          }
 
           return {
             productId: item.productId,
             quantity: item.quantity,
             unitPrice: priceNum,
-            notes: item.notes || null,
+            notes: fullNotes || null,
+            options: item.options ? (item.options as any) : null,
           };
         });
 
@@ -290,6 +316,7 @@ export async function POST(request: NextRequest) {
           productName: it.product?.name || 'Producto',
           unitPrice: Number(it.unitPrice),
           subtotal: Number(it.unitPrice) * it.quantity,
+          options: (it.options as any) || null,
         })),
       };
     } catch (dbError) {
@@ -302,9 +329,23 @@ export async function POST(request: NextRequest) {
       let calcSubtotal = 0;
 
       const fallbackItems = data.items.map((item, idx) => {
-        const fallbackPrice = 8990;
+        const fallbackBasePrice = 8990;
+        const optionsPrice = (item.options || []).reduce(
+          (sum, o) => sum + (Number(o.price) || 0),
+          0
+        );
+        const fallbackPrice = fallbackBasePrice + optionsPrice;
         const lineTotal = fallbackPrice * item.quantity;
         calcSubtotal += lineTotal;
+
+        let fullNotes = item.notes || '';
+        if (item.options && item.options.length > 0) {
+          const modsText = item.options
+            .map((o) => (o.price > 0 ? `+ ${o.name} ($${o.price})` : o.name))
+            .join(', ');
+          fullNotes = fullNotes ? `[${modsText}] ${fullNotes}` : `[${modsText}]`;
+        }
+
         return {
           id: `item-${idx}`,
           productId: item.productId,
@@ -312,7 +353,8 @@ export async function POST(request: NextRequest) {
           unitPrice: fallbackPrice,
           quantity: item.quantity,
           subtotal: lineTotal,
-          notes: item.notes || null,
+          notes: fullNotes || null,
+          options: item.options || null,
         };
       });
 

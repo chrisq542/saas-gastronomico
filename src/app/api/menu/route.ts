@@ -37,6 +37,17 @@ export async function GET(request: NextRequest) {
         products: {
           where: { isActive: true },
           orderBy: { name: 'asc' },
+          include: {
+            optionGroups: {
+              orderBy: { sortOrder: 'asc' },
+              include: {
+                options: {
+                  where: { isAvailable: true },
+                  orderBy: { sortOrder: 'asc' },
+                },
+              },
+            },
+          },
         },
       },
     });
@@ -54,6 +65,8 @@ export async function GET(request: NextRequest) {
             bannerUrl: restaurant.bannerUrl,
             address: restaurant.address,
             customDomain: restaurant.customDomain,
+            menuPdfUrl: restaurant.menuPdfUrl,
+            schedule: (restaurant as any).schedule || null,
           }
         : null,
     });

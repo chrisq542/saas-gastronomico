@@ -66,3 +66,27 @@ export async function fileToBase64Optimized(
     reader.readAsDataURL(file);
   });
 }
+
+/**
+ * Convierte un archivo PDF a Base64 data URL para almacenamiento seguro
+ */
+export async function pdfFileToBase64(
+  file: File,
+  maxSizeBytes: number = 10 * 1024 * 1024
+): Promise<string> {
+  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    throw new Error('El archivo seleccionado debe ser un documento en formato PDF.');
+  }
+
+  if (file.size > maxSizeBytes) {
+    throw new Error('El archivo PDF excede el límite recomendado de 10 MB.');
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Error al procesar el archivo PDF.'));
+    reader.onload = () => resolve(reader.result as string);
+    reader.readAsDataURL(file);
+  });
+}
+

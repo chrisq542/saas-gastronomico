@@ -35,6 +35,34 @@ export interface Category {
   products?: Product[];
 }
 
+export interface ProductOption {
+  id: string;
+  groupId: string;
+  name: string;
+  price: number;
+  isAvailable: boolean;
+  sortOrder?: number;
+}
+
+export interface ProductOptionGroup {
+  id: string;
+  productId: string;
+  name: string;
+  minSelect: number;
+  maxSelect: number;
+  isRequired: boolean;
+  sortOrder?: number;
+  options: ProductOption[];
+}
+
+export interface SelectedProductOption {
+  id: string;
+  groupId?: string;
+  groupName?: string;
+  name: string;
+  price: number;
+}
+
 export interface Product {
   id: string;
   categoryId: string;
@@ -44,6 +72,7 @@ export interface Product {
   imageUrl?: string | null;
   isAvailable: boolean;
   preparationTime?: number | null;
+  optionGroups?: ProductOptionGroup[];
 }
 
 export interface OrderItem {
@@ -55,6 +84,7 @@ export interface OrderItem {
   quantity: number;
   subtotal: number;
   notes?: string | null;
+  options?: SelectedProductOption[] | null;
 }
 
 export interface Order {
@@ -80,7 +110,11 @@ export interface Order {
 }
 
 export interface CartItem {
+  cartItemId?: string;
   product: Product;
   quantity: number;
   notes?: string;
+  selectedOptions?: SelectedProductOption[];
+  unitPrice?: number;
 }
+
