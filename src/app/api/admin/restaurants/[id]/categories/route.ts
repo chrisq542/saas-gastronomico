@@ -1,22 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { verifyTenantAdminAccess } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
-
-function getSuperadminAuth() {
-  const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('auth_session');
-
-  if (!sessionCookie || !sessionCookie.value) return null;
-  try {
-    const user = JSON.parse(sessionCookie.value);
-    if (user.role === 'SUPERADMIN' || user.role === 'STORE_ADMIN') return user;
-  } catch {
-    return null;
-  }
-  return null;
-}
 
 // GET /api/admin/restaurants/[id]/categories
 export async function GET(
@@ -24,6 +10,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const access = await verifyTenantAdminAccess(params.id);
+    if (!access.authorized) {
+      return NextResponse.json(
+        { success: false, message: access.error || 'Acceso no autorizado' },
+        { status: access.status || 403 }
+      );
+    }
+
     const categories = await prisma.category.findMany({
       where: { restaurantId: params.id },
       orderBy: { sortOrder: 'asc' },
@@ -49,12 +43,27 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = getSuperadminAuth();
-    if (!auth) {
+    const access = await verifyTenantAdminAccess(params.id);
+    if (!access.authorized) {
       return NextResponse.json(
-        { success: false, message: 'Acceso no autorizado' },
-        { status: 403 }
+        { success: false, message: access.error || 'Acceso no autorizado' },
+        { status: access.status || 403 }
       );
+    }
+
+    if (access.isDemo) {
+      const count = await prisma.category.count({
+        where: { restaurantId: params.id },
+      });
+      if (count >= 12) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: 'Modo Demo (Sandbox): Límite máximo de 12 categorías alcanzado.',
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await req.json();
@@ -94,11 +103,11 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = getSuperadminAuth();
-    if (!auth) {
+    const access = await verifyTenantAdminAccess(params.id);
+    if (!access.authorized) {
       return NextResponse.json(
-        { success: false, message: 'Acceso no autorizado' },
-        { status: 403 }
+        { success: false, message: access.error || 'Acceso no autorizado' },
+        { status: access.status || 403 }
       );
     }
 
@@ -142,10 +151,21 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = getSuperadminAuth();
-    if (!auth) {
+    const access = await verifyTenantAdminAccess(params.id);
+    if (!access.authorized) {
       return NextResponse.json(
-        { success: false, message: 'Acceso no autorizado' },
+        { success: false, message: access.error || 'Acceso no autorizado' },
+        { status: access.status || 403 }
+      );
+    }
+
+    if (access.isDemo) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'Modo Demo (Sandbox): Por seguridad, la eliminación de categorías está deshabilitada en la tienda de prueba.',
+        },
         { status: 403 }
       );
     }
@@ -155,7 +175,7 @@ export async function DELETE(
 
     if (!categoryId) {
       return NextResponse.json(
-        { success: false, message: 'categoryId o id requerido' },
+        { success: false, message: 'ID de la categoría requerido' },
         { status: 400 }
       );
     }
@@ -166,7 +186,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: 'Categoría eliminada con éxito',
+      message: 'Categoría eliminada correctamente',
     });
   } catch (error: any) {
     return NextResponse.json(

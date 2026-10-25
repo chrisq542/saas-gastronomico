@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { sendPasswordResetEmail } from '@/lib/mail/resend';
 import { extractClientGeo } from '@/lib/utils/geo';
+import { DEMO_TENANT_SLUG } from '@/lib/auth';
 
 // Duración del código: 15 minutos
 const CODE_EXPIRATION_MINUTES = 15;
@@ -23,11 +25,13 @@ export async function POST(req: Request) {
     // 1. Verificar si el usuario existe en el sistema
     const user = await prisma.user.findUnique({
       where: { email: cleanEmail },
+      include: {
+        restaurant: { select: { slug: true } },
+      },
     });
 
-    // Por seguridad (anti-user enumeration), si el usuario no existe respondemos éxito
-    // genérico para evitar que atacantes adivinen qué correos existen en la base de datos.
-    if (!user) {
+    // Por seguridad (anti-user enumeration) y protección del Sandbox Demo:
+    if (!user || user.restaurant?.slug === DEMO_TENANT_SLUG) {
       return NextResponse.json({
         message: 'Si el correo está registrado, recibirás un código de 6 dígitos en breve.',
       });
@@ -45,7 +49,7 @@ export async function POST(req: Request) {
     });
 
     // 3. Generar un código numérico aleatorio y criptográficamente seguro de 6 dígitos (100000 - 999999)
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + CODE_EXPIRATION_MINUTES * 60 * 1000);
 
     // 4. Guardar en base de datos

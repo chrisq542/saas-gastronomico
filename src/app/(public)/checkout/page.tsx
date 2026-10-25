@@ -602,7 +602,7 @@ function CheckoutContent() {
               <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                 {items.map((item) => (
                   <div
-                    key={item.product.id}
+                    key={`${item.product.id}-${item.notes || ''}`}
                     className="flex items-start justify-between gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800/80 text-xs"
                   >
                     <div className="flex-1">
@@ -621,7 +621,7 @@ function CheckoutContent() {
                       <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-md bg-zinc-50 dark:bg-zinc-900">
                         <button
                           type="button"
-                          onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.notes || '')}
                           className="p-1 hover:text-zinc-950 dark:hover:text-zinc-100"
                         >
                           <Minus className="w-3 h-3" />
@@ -629,7 +629,7 @@ function CheckoutContent() {
                         <span className="px-2 text-xs font-medium text-zinc-950 dark:text-zinc-100">{item.quantity}</span>
                         <button
                           type="button"
-                          onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.notes || '')}
                           className="p-1 hover:text-zinc-950 dark:hover:text-zinc-100"
                         >
                           <Plus className="w-3 h-3" />
@@ -638,7 +638,7 @@ function CheckoutContent() {
 
                       <button
                         type="button"
-                        onClick={() => removeItem(item.product.id)}
+                        onClick={() => removeItem(item.product.id, item.notes || '')}
                         className="text-zinc-400 hover:text-rose-600 p-1 transition"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

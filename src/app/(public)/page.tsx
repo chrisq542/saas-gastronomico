@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ShieldCheck,
   ChefHat,
@@ -12,9 +13,35 @@ import {
   ExternalLink,
   Store,
   Receipt,
+  Loader2,
 } from 'lucide-react';
 
 export default function SaaSIndexPage() {
+  const router = useRouter();
+  const [demoLoading, setDemoLoading] = useState<'KDS' | 'ORDERS' | null>(null);
+
+  const launchDemoSandbox = async (target: 'KDS' | 'ORDERS') => {
+    setDemoLoading(target);
+    try {
+      const role = target === 'KDS' ? 'KITCHEN' : 'STORE_ADMIN';
+      const res = await fetch('/api/auth/demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        router.push(target === 'KDS' ? '/kds' : '/orders');
+        return;
+      }
+      router.push('/login');
+    } catch {
+      router.push('/login');
+    } finally {
+      setDemoLoading(null);
+    }
+  };
+
   return (
     <div className="space-y-16 sm:space-y-24 py-12 sm:py-16">
       {/* 1. HERO SECTION */}
@@ -60,7 +87,7 @@ export default function SaaSIndexPage() {
             <div className="space-y-4 max-w-xl">
               <div className="inline-flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 text-xs font-medium px-2.5 py-1 rounded-md">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Inquilino de Demostración Activo</span>
+                <span>Inquilino de Demostración Activo (Sandbox Aislado)</span>
               </div>
 
               <div>
@@ -68,7 +95,7 @@ export default function SaaSIndexPage() {
                   SAS Burger Demo
                 </h2>
                 <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-                  Local configurado en base de datos bajo el identificador único <code className="text-zinc-900 dark:text-zinc-200 font-mono font-medium px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-850 rounded text-xs">sas-burger</code>. Explora la experiencia del cliente final o la operativa de cocina.
+                  Local configurado en base de datos bajo el identificador único <code className="text-zinc-900 dark:text-zinc-200 font-mono font-medium px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-850 rounded text-xs">sas-burger</code>. Explora la experiencia del cliente final, el panel de administrador de local o la pantalla de cocina.
                 </p>
               </div>
 
@@ -103,23 +130,35 @@ export default function SaaSIndexPage() {
                 <ExternalLink className="w-3 h-3 opacity-60" />
               </Link>
 
-              <Link
-                href="/kds"
-                className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 font-medium text-xs px-4 py-2.5 rounded-lg transition"
+              <button
+                type="button"
+                disabled={demoLoading !== null}
+                onClick={() => launchDemoSandbox('KDS')}
+                className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 font-medium text-xs px-4 py-2.5 rounded-lg transition disabled:opacity-50"
               >
-                <ChefHat className="w-3.5 h-3.5" />
-                <span>Monitor Cocina KDS (/kds)</span>
-                <ExternalLink className="w-3 h-3 opacity-60" />
-              </Link>
+                {demoLoading === 'KDS' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <ChefHat className="w-3.5 h-3.5" />
+                )}
+                <span>Probar Monitor Cocina (KDS)</span>
+                <ArrowRight className="w-3 h-3 opacity-60" />
+              </button>
 
-              <Link
-                href="/orders"
-                className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 font-medium text-xs px-4 py-2.5 rounded-lg transition"
+              <button
+                type="button"
+                disabled={demoLoading !== null}
+                onClick={() => launchDemoSandbox('ORDERS')}
+                className="inline-flex items-center justify-center gap-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-800 font-medium text-xs px-4 py-2.5 rounded-lg transition disabled:opacity-50"
               >
-                <Receipt className="w-3.5 h-3.5" />
-                <span>Gestión de Pedidos (/orders)</span>
-                <ExternalLink className="w-3 h-3 opacity-60" />
-              </Link>
+                {demoLoading === 'ORDERS' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Receipt className="w-3.5 h-3.5" />
+                )}
+                <span>Probar Admin de Local (Pedidos & Carta)</span>
+                <ArrowRight className="w-3 h-3 opacity-60" />
+              </button>
             </div>
           </div>
         </div>

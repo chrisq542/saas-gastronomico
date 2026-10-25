@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { ROUTES, ROLES } from '@/constants';
+import { DEMO_TENANT_SLUG, SESSION_COOKIE_NAME, signSessionToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,35 +67,42 @@ export async function POST(req: NextRequest) {
     if (user.role === ROLES.SUPERADMIN) {
       redirectUrl = ROUTES.SUPERADMIN.ROOT;
     } else if (user.role === ROLES.STORE_ADMIN) {
-      redirectUrl = user.restaurantId
-        ? `${ROUTES.STORE.ORDERS}?restaurantId=${encodeURIComponent(user.restaurantId)}`
-        : ROUTES.STORE.ORDERS;
+      redirectUrl = ROUTES.STORE.ORDERS;
     } else if (user.role === ROLES.KITCHEN) {
-      redirectUrl = user.restaurantId
-        ? `${ROUTES.STORE.KDS}?restaurantId=${encodeURIComponent(user.restaurantId)}`
-        : ROUTES.STORE.KDS;
+      redirectUrl = ROUTES.STORE.KDS;
     }
+
+    const isDemoTenant =
+      user.role !== ROLES.SUPERADMIN && user.restaurant?.slug === DEMO_TENANT_SLUG;
 
     const sessionPayload = {
       userId: user.id,
-      email: user.email,
-      role: user.role,
+      email: isDemoTenant
+        ? user.role === ROLES.KITCHEN
+          ? 'Cocina Demo (Sandbox)'
+          : 'Admin Local Demo (Sandbox)'
+        : user.email,
+      role: user.role as 'SUPERADMIN' | 'STORE_ADMIN' | 'KITCHEN',
       restaurantId: user.restaurantId,
       restaurantSlug: user.restaurant?.slug || null,
       restaurantName: user.restaurant?.name || null,
+      isDemo: isDemoTenant,
     };
 
     const isHttps =
       req.headers.get('x-forwarded-proto') === 'https' || req.nextUrl.protocol === 'https:';
 
-    // Guardar cookie de sesión
+    const maxAge = isDemoTenant ? 60 * 60 * 4 : 60 * 60 * 24 * 7;
+    const signedToken = await signSessionToken(sessionPayload, maxAge);
+
+    // Guardar cookie de sesión firmada y httpOnly
     const cookieStore = cookies();
-    cookieStore.set('auth_session', JSON.stringify(sessionPayload), {
-      httpOnly: false, // Accesible por cliente para hidratación UI
+    cookieStore.set(SESSION_COOKIE_NAME, signedToken, {
+      httpOnly: true,
       secure: isHttps,
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 días
+      maxAge,
     });
 
     return NextResponse.json({

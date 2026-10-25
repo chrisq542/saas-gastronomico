@@ -4,6 +4,7 @@ import { cleanPhoneNumber, validateRut } from '@/lib/utils/formatters';
 import { generateOrderWhatsAppUrl } from '@/lib/whatsapp/order-formatter';
 import { z } from 'zod';
 import { Order as OrderType } from '@/types';
+import { getSessionUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,25 +44,47 @@ const createOrderSchema = z.object({
     .min(1, 'El pedido debe incluir al menos un producto'),
 });
 
-// GET: Consultar listado de pedidos (KDS y Admin)
+// GET: Consultar listado de pedidos (KDS y Admin) — Requiere sesión autenticada y aísla por tenant
 export async function GET(request: NextRequest) {
   try {
+    const sessionUser = await getSessionUser();
+    if (!sessionUser) {
+      return NextResponse.json(
+        { success: false, error: 'No autenticado' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const phone = searchParams.get('phone');
-    const restaurantId = searchParams.get('restaurantId');
-    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const requestedRestaurantId = searchParams.get('restaurantId');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50', 10), 200);
+
+    // Aislamiento estricto por tenant: solo SUPERADMIN real puede consultar cualquier restaurantId
+    let effectiveRestaurantId: string | null = null;
+    if (sessionUser.role === 'SUPERADMIN' && !sessionUser.isDemo) {
+      effectiveRestaurantId = requestedRestaurantId;
+    } else {
+      if (!sessionUser.restaurantId) {
+        return NextResponse.json(
+          { success: false, error: 'Usuario sin restaurante asignado' },
+          { status: 403 }
+        );
+      }
+      effectiveRestaurantId = sessionUser.restaurantId;
+    }
 
     const orders = await prisma.order.findMany({
       where: {
-        ...(restaurantId ? { restaurantId } : {}),
+        ...(effectiveRestaurantId ? { restaurantId: effectiveRestaurantId } : {}),
         ...(status ? { status: status as any } : {}),
         ...(phone
           ? {
-            customer: {
-              phone: { contains: cleanPhoneNumber(phone) },
-            },
-          }
+              customer: {
+                phone: { contains: cleanPhoneNumber(phone) },
+              },
+            }
           : {}),
       },
       orderBy: { createdAt: 'desc' },
@@ -126,15 +149,37 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const restaurantId = restaurant?.id || 'a1111111-1111-1111-1111-111111111111';
+    if (!restaurant || !restaurant.isActive) {
+      return NextResponse.json(
+        { success: false, error: 'El restaurante no se encuentra disponible' },
+        { status: 404 }
+      );
+    }
+
+    const restaurantId = restaurant.id;
 
     let formattedOrder: any;
 
     try {
-      const productIds = data.items.map((i) => i.productId);
+      const productIds = Array.from(new Set(data.items.map((i) => i.productId)));
       const dbProducts = await prisma.product.findMany({
-        where: { id: { in: productIds } },
+        where: {
+          id: { in: productIds },
+          restaurantId,
+          isActive: true,
+        },
       });
+
+      if (dbProducts.length !== productIds.length) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              'Uno o más productos del carrito no pertenecen a este local o ya no están disponibles. Por favor actualiza tu carrito.',
+          },
+          { status: 400 }
+        );
+      }
 
       const productMap = new Map(dbProducts.map((p) => [p.id, p]));
 
@@ -170,8 +215,9 @@ export async function POST(request: NextRequest) {
           if (existingAddresses.length < 3) {
             const fullAddressText =
               data.address.address ||
-              `${data.address.street || ''} ${data.address.number || ''} ${data.address.apartment ? 'Depto ' + data.address.apartment : ''
-                }`.trim();
+              `${data.address.street || ''} ${data.address.number || ''} ${
+                data.address.apartment ? 'Depto ' + data.address.apartment : ''
+              }`.trim();
 
             await tx.address.create({
               data: {
@@ -186,8 +232,8 @@ export async function POST(request: NextRequest) {
 
         let subtotal = 0;
         const orderItemsData = data.items.map((item) => {
-          const prod = productMap.get(item.productId);
-          const priceNum = prod ? Number(prod.price) : 8990;
+          const prod = productMap.get(item.productId)!;
+          const priceNum = Number(prod.price);
           const itemSubtotal = priceNum * item.quantity;
           subtotal += itemSubtotal;
 

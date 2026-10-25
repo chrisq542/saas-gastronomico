@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { generateCustomerStatusWhatsAppUrl } from '@/lib/whatsapp/order-formatter';
 import { z } from 'zod';
+import { getSessionUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +11,7 @@ const updateOrderSchema = z.object({
   notes: z.string().optional().nullable(),
 });
 
-// GET: Obtener detalle de pedido por ID
+// GET: Obtener detalle de pedido por ID (usado en /order-status/[id])
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -45,12 +46,41 @@ export async function GET(
   }
 }
 
-// PATCH: Actualizar estado de comanda (KDS)
+// PATCH: Actualizar estado de comanda (KDS / Gestión de Pedidos) — Requiere sesión autenticada y pertenencia al tenant
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const sessionUser = await getSessionUser();
+    if (!sessionUser) {
+      return NextResponse.json(
+        { success: false, error: 'No autenticado' },
+        { status: 401 }
+      );
+    }
+
+    const existingOrder = await prisma.order.findUnique({
+      where: { id: params.id },
+      select: { id: true, restaurantId: true },
+    });
+
+    if (!existingOrder) {
+      return NextResponse.json(
+        { success: false, error: 'Pedido no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    // Verificar aislamiento por tenant (excepto SUPERADMIN real)
+    const isRealSuperadmin = sessionUser.role === 'SUPERADMIN' && !sessionUser.isDemo;
+    if (!isRealSuperadmin && existingOrder.restaurantId !== sessionUser.restaurantId) {
+      return NextResponse.json(
+        { success: false, error: 'No tienes permiso para modificar pedidos de otro restaurante' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const validatedData = updateOrderSchema.parse(body);
 

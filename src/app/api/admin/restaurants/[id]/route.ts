@@ -1,21 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { DEMO_TENANT_SLUG, getSessionUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-function getSuperadminAuth() {
-  const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('auth_session');
-
-  if (!sessionCookie || !sessionCookie.value) return null;
-  try {
-    const user = JSON.parse(sessionCookie.value);
-    if (user.role === 'SUPERADMIN') return user;
-  } catch {
-    return null;
-  }
-  return null;
+async function getSuperadminAuth() {
+  const user = await getSessionUser();
+  if (!user || user.role !== 'SUPERADMIN' || user.isDemo) return null;
+  return user;
 }
 
 export async function GET(
@@ -23,7 +15,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const superadmin = getSuperadminAuth();
+    const superadmin = await getSuperadminAuth();
     if (!superadmin) {
       return NextResponse.json(
         { success: false, message: 'Acceso no autorizado' },
@@ -74,7 +66,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const superadmin = getSuperadminAuth();
+    const superadmin = await getSuperadminAuth();
     if (!superadmin) {
       return NextResponse.json(
         { success: false, message: 'Acceso no autorizado' },
@@ -153,7 +145,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const superadmin = getSuperadminAuth();
+    const superadmin = await getSuperadminAuth();
     if (!superadmin) {
       return NextResponse.json(
         { success: false, message: 'Acceso no autorizado' },
@@ -161,15 +153,28 @@ export async function DELETE(
       );
     }
 
-    const restaurantId = params.id;
+    const target = await prisma.restaurant.findUnique({
+      where: { id: params.id },
+      select: { slug: true },
+    });
+
+    if (target?.slug === DEMO_TENANT_SLUG) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'El restaurante de demostración (sas-burger) está protegido contra eliminación.',
+        },
+        { status: 403 }
+      );
+    }
 
     await prisma.restaurant.delete({
-      where: { id: restaurantId },
+      where: { id: params.id },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Restaurante y sus datos asociados fueron eliminados correctamente.',
+      message: 'Restaurante y todos sus datos asociados fueron eliminados',
     });
   } catch (error: any) {
     console.error('Error eliminando restaurante:', error);

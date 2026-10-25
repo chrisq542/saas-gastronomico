@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { getSessionUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-function getSuperadminAuth() {
-  const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('auth_session');
-
-  if (!sessionCookie || !sessionCookie.value) return null;
-  try {
-    const user = JSON.parse(sessionCookie.value);
-    if (user.role === 'SUPERADMIN') return user;
-  } catch {
-    return null;
-  }
-  return null;
+async function getSuperadminAuth() {
+  const user = await getSessionUser();
+  if (!user || user.role !== 'SUPERADMIN' || user.isDemo) return null;
+  return user;
 }
 
 // GET /api/admin/restaurants/[id]/users - Listar usuarios del tenant
@@ -25,7 +17,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const superadmin = getSuperadminAuth();
+    const superadmin = await getSuperadminAuth();
     if (!superadmin) {
       return NextResponse.json(
         { success: false, message: 'Acceso denegado' },
@@ -59,7 +51,7 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const superadmin = getSuperadminAuth();
+    const superadmin = await getSuperadminAuth();
     if (!superadmin) {
       return NextResponse.json(
         { success: false, message: 'Acceso denegado' },
@@ -127,7 +119,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const superadmin = getSuperadminAuth();
+    const superadmin = await getSuperadminAuth();
     if (!superadmin) {
       return NextResponse.json(
         { success: false, message: 'Acceso denegado' },
@@ -151,7 +143,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      message: 'Usuario eliminado exitosamente',
+      message: 'Usuario eliminado correctamente',
     });
   } catch (error: any) {
     return NextResponse.json(

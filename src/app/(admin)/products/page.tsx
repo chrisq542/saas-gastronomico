@@ -40,7 +40,7 @@ function ProductsAdminContent() {
   const paramRestaurantId = searchParams.get('restaurantId');
 
   // Estado del local / tenant
-  const [restaurantId, setRestaurantId] = useState<string | null>(paramRestaurantId);
+  const [restaurantId, setRestaurantId] = useState<string | null>(null);
   const [restaurants, setRestaurants] = useState<RestaurantOption[]>([]);
   const [currentRestaurantName, setCurrentRestaurantName] = useState<string>('');
 
@@ -70,34 +70,34 @@ function ProductsAdminContent() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // 1. Identificar el Tenant actual
+  // 1. Identificar el Tenant actual validando rol de sesión
   useEffect(() => {
     async function initTenant() {
-      if (paramRestaurantId) {
-        setRestaurantId(paramRestaurantId);
-        return;
-      }
-
       try {
         const authRes = await fetch('/api/auth/me');
         const authData = await authRes.json();
 
         if (authData.authenticated && authData.user) {
-          if (authData.user.restaurantId) {
-            setRestaurantId(authData.user.restaurantId);
-            setCurrentRestaurantName(authData.user.restaurantName || '');
-            return;
-          }
-
-          // Si es superadmin y no tiene restaurantId asignado, traer lista de restaurantes
-          if (authData.user.role === 'SUPERADMIN') {
+          // Si es SUPERADMIN real, permitir paramRestaurantId o selector de restaurantes
+          if (authData.user.role === 'SUPERADMIN' && !authData.user.isDemo) {
             const tenantsRes = await fetch('/api/admin/restaurants');
             const tenantsData = await tenantsRes.json();
             if (tenantsData.success && tenantsData.data?.length > 0) {
               setRestaurants(tenantsData.data);
-              setRestaurantId(tenantsData.data[0].id);
-              setCurrentRestaurantName(tenantsData.data[0].name);
+              const matched = paramRestaurantId
+                ? tenantsData.data.find((t: any) => t.id === paramRestaurantId)
+                : tenantsData.data[0];
+              const activeTenant = matched || tenantsData.data[0];
+              setRestaurantId(activeTenant.id);
+              setCurrentRestaurantName(activeTenant.name);
+              return;
             }
+          }
+
+          // Para STORE_ADMIN o Demo Sandbox, forzar exclusivamente su propio restaurantId
+          if (authData.user.restaurantId) {
+            setRestaurantId(authData.user.restaurantId);
+            setCurrentRestaurantName(authData.user.restaurantName || '');
           }
         }
       } catch (err) {

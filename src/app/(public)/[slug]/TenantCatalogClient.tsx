@@ -26,7 +26,15 @@ export default function TenantCatalogClient({
   restaurant,
   initialCategories,
 }: TenantCatalogClientProps) {
-  const { addItem, totalItems, subtotal } = useCart();
+  const { items, addItem } = useCart();
+  const tenantItems = items.filter(
+    (i) => !(i.product as any).restaurantId || (i.product as any).restaurantId === restaurant.id
+  );
+  const totalItems = tenantItems.reduce((acc, curr) => acc + curr.quantity, 0);
+  const subtotal = tenantItems.reduce(
+    (acc, curr) => acc + Number(curr.product.price) * curr.quantity,
+    0
+  );
   const [categories] = useState<any[]>(initialCategories);
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

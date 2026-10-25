@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { getSessionUser } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const cookieStore = cookies();
-    const sessionCookie = cookieStore.get('auth_session');
-
-    if (!sessionCookie || !sessionCookie.value) {
+    const user = await getSessionUser();
+    if (!user) {
       return NextResponse.json({ authenticated: false, user: null });
     }
 
-    const user = JSON.parse(sessionCookie.value);
     return NextResponse.json({ authenticated: true, user });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ authenticated: false, user: null });
   }
 }

@@ -29,25 +29,24 @@ import {
 function KDSContent() {
   const searchParams = useSearchParams();
   const paramRestaurantId = searchParams.get('restaurantId');
-  const [restaurantId, setRestaurantId] = useState<string | null>(paramRestaurantId);
+  const [restaurantId, setRestaurantId] = useState<string | null>(null);
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTicketOrder, setSelectedTicketOrder] = useState<Order | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Resolver restaurantId desde sesión si no viene por query param
+  // Resolver restaurantId validando rol en sesión (solo SUPERADMIN puede elegir restaurantId por query param)
   useEffect(() => {
-    if (paramRestaurantId) {
-      setRestaurantId(paramRestaurantId);
-      return;
-    }
-
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
-        if (data.authenticated && data.user?.restaurantId) {
-          setRestaurantId(data.user.restaurantId);
+        if (data.authenticated && data.user) {
+          if (data.user.role === 'SUPERADMIN' && !data.user.isDemo && paramRestaurantId) {
+            setRestaurantId(paramRestaurantId);
+          } else if (data.user.restaurantId) {
+            setRestaurantId(data.user.restaurantId);
+          }
         }
       })
       .catch(() => {});

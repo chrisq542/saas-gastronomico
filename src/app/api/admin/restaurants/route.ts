@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
+import { getSessionUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const currentUser = await getSessionUser();
+    if (!currentUser || currentUser.role !== 'SUPERADMIN' || currentUser.isDemo) {
+      return NextResponse.json(
+        { success: false, message: 'Acceso denegado: se requieren permisos de SUPERADMIN.' },
+        { status: 403 }
+      );
+    }
+
     const restaurants = await prisma.restaurant.findMany({
       orderBy: { createdAt: 'desc' },
       include: {
@@ -33,28 +41,17 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Validar sesión del Superadmin
-    const cookieStore = cookies();
-    const sessionCookie = cookieStore.get('auth_session');
+    // 1. Validar sesión firmada del Superadmin
+    const currentUser = await getSessionUser();
 
-    if (!sessionCookie || !sessionCookie.value) {
+    if (!currentUser) {
       return NextResponse.json(
         { success: false, message: 'No autenticado. Inicie sesión como Superadmin.' },
         { status: 401 }
       );
     }
 
-    let currentUser: any;
-    try {
-      currentUser = JSON.parse(sessionCookie.value);
-    } catch {
-      return NextResponse.json(
-        { success: false, message: 'Sesión inválida.' },
-        { status: 401 }
-      );
-    }
-
-    if (currentUser?.role !== 'SUPERADMIN') {
+    if (currentUser.role !== 'SUPERADMIN' || currentUser.isDemo) {
       return NextResponse.json(
         { success: false, message: 'Acceso denegado: solo el SUPERADMIN puede crear inquilinos.' },
         { status: 403 }

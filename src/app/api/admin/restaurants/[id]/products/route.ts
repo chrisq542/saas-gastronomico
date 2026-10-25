@@ -1,22 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { verifyTenantAdminAccess } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
-
-function getSuperadminAuth() {
-  const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('auth_session');
-
-  if (!sessionCookie || !sessionCookie.value) return null;
-  try {
-    const user = JSON.parse(sessionCookie.value);
-    if (user.role === 'SUPERADMIN' || user.role === 'STORE_ADMIN') return user;
-  } catch {
-    return null;
-  }
-  return null;
-}
 
 // GET /api/admin/restaurants/[id]/products
 export async function GET(
@@ -24,6 +10,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const access = await verifyTenantAdminAccess(params.id);
+    if (!access.authorized) {
+      return NextResponse.json(
+        { success: false, message: access.error || 'Acceso no autorizado' },
+        { status: access.status || 403 }
+      );
+    }
+
     const products = await prisma.product.findMany({
       where: { restaurantId: params.id },
       include: {
@@ -49,12 +43,29 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = getSuperadminAuth();
-    if (!auth) {
+    const access = await verifyTenantAdminAccess(params.id);
+    if (!access.authorized) {
       return NextResponse.json(
-        { success: false, message: 'Acceso no autorizado' },
-        { status: 403 }
+        { success: false, message: access.error || 'Acceso no autorizado' },
+        { status: access.status || 403 }
       );
+    }
+
+    // Límite de seguridad para el Sandbox Demo
+    if (access.isDemo) {
+      const currentCount = await prisma.product.count({
+        where: { restaurantId: params.id },
+      });
+      if (currentCount >= 30) {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              'Modo Demo (Sandbox): Se alcanzó el límite máximo de 30 productos de prueba.',
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await req.json();
@@ -102,11 +113,11 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = getSuperadminAuth();
-    if (!auth) {
+    const access = await verifyTenantAdminAccess(params.id);
+    if (!access.authorized) {
       return NextResponse.json(
-        { success: false, message: 'Acceso no autorizado' },
-        { status: 403 }
+        { success: false, message: access.error || 'Acceso no autorizado' },
+        { status: access.status || 403 }
       );
     }
 
@@ -158,10 +169,21 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = getSuperadminAuth();
-    if (!auth) {
+    const access = await verifyTenantAdminAccess(params.id);
+    if (!access.authorized) {
       return NextResponse.json(
-        { success: false, message: 'Acceso no autorizado' },
+        { success: false, message: access.error || 'Acceso no autorizado' },
+        { status: access.status || 403 }
+      );
+    }
+
+    if (access.isDemo) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            'Modo Demo (Sandbox): Por seguridad, la eliminación de productos está deshabilitada en la tienda de prueba. Puedes crear o editar productos libremente.',
+        },
         { status: 403 }
       );
     }

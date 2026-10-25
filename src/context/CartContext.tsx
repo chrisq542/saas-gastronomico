@@ -6,8 +6,8 @@ import { CartItem, Product } from '@/types';
 interface CartContextType {
   items: CartItem[];
   addItem: (product: Product, quantity?: number, notes?: string) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeItem: (productId: string, notes?: string) => void;
+  updateQuantity: (productId: string, quantity: number, notes?: string) => void;
   updateNotes: (productId: string, notes: string) => void;
   clearCart: () => void;
   totalItems: number;
@@ -46,27 +46,58 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addItem = (product: Product, quantity: number = 1, notes: string = '') => {
     setItems((prev) => {
-      const existingIndex = prev.findIndex((i) => i.product.id === product.id && i.notes === notes);
+      // Aislamiento Multi-Tenant del carrito: si el producto pertenece a otro restaurante distinto,
+      // reiniciar el carrito automáticamente para nunca mezclar productos de diferentes tiendas.
+      const incomingRestaurantId = (product as any).restaurantId;
+      const existingRestaurantId =
+        prev.length > 0 ? (prev[0].product as any).restaurantId : null;
+
+      const baseItems =
+        incomingRestaurantId &&
+        existingRestaurantId &&
+        incomingRestaurantId !== existingRestaurantId
+          ? []
+          : prev;
+
+      const normalizedNotes = notes.trim();
+      const existingIndex = baseItems.findIndex(
+        (i) => i.product.id === product.id && (i.notes || '') === normalizedNotes
+      );
       if (existingIndex > -1) {
-        const next = [...prev];
-        next[existingIndex].quantity += quantity;
+        const next = [...baseItems];
+        next[existingIndex] = {
+          ...next[existingIndex],
+          quantity: next[existingIndex].quantity + quantity,
+        };
         return next;
       }
-      return [...prev, { product, quantity, notes }];
+      return [...baseItems, { product, quantity, notes: normalizedNotes }];
     });
   };
 
-  const removeItem = (productId: string) => {
-    setItems((prev) => prev.filter((i) => i.product.id !== productId));
+  const removeItem = (productId: string, notes?: string) => {
+    setItems((prev) =>
+      prev.filter((i) =>
+        notes !== undefined
+          ? !(i.product.id === productId && (i.notes || '') === notes)
+          : i.product.id !== productId
+      )
+    );
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, notes?: string) => {
     if (quantity <= 0) {
-      removeItem(productId);
+      removeItem(productId, notes);
       return;
     }
     setItems((prev) =>
-      prev.map((i) => (i.product.id === productId ? { ...i, quantity } : i))
+      prev.map((i) => {
+        const matches =
+          notes !== undefined
+            ? i.product.id === productId && (i.notes || '') === notes
+            : i.product.id === productId;
+        return matches ? { ...i, quantity } : i;
+      })
     );
   };
 
