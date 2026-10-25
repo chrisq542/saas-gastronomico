@@ -30,11 +30,20 @@ export const metadata: Metadata = {
     siteName: SEO_CONFIG.siteName,
     locale: SEO_CONFIG.locale,
     type: 'website',
+    images: [
+      {
+        url: `${BASE_URL}/opengraph-image`,
+        width: 1200,
+        height: 630,
+        alt: SEO_CONFIG.siteName,
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: SEO_CONFIG.defaultTitle,
     description: SEO_CONFIG.defaultDescription,
+    images: [`${BASE_URL}/opengraph-image`],
   },
   robots: {
     index: true,

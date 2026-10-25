@@ -230,9 +230,9 @@ export default function TenantCatalogClient({
                   </button>
                 )}
               </div>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 dark:text-zinc-50">
                 {restaurant.name}
-              </h2>
+              </h1>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-0.5">
                 {restaurant.address && (
                   <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 flex items-center gap-1.5">

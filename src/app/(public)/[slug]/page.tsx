@@ -1,84 +1,16 @@
+import { cache } from 'react';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
 import TenantCatalogClient from './TenantCatalogClient';
 import type { Metadata } from 'next';
 
 import { BASE_URL } from '@/constants/seo';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const slug = params.slug?.toLowerCase().trim();
-  const restaurant = await prisma.restaurant.findUnique({
-    where: { slug },
-    select: { name: true, logoUrl: true, bannerUrl: true, address: true, phone: true },
-  });
-
-  if (!restaurant) {
-    return { title: 'Restaurante no encontrado | Menú Digital' };
-  }
-
-  const title = `${restaurant.name} | Menú Digital, Carta QR y Pedidos Online`;
-  const description = `Consulta la carta digital y realiza tu pedido online en ${restaurant.name}. Personaliza agregados, ingredientes y pide directo a WhatsApp sin comisiones.`;
-
-  return {
-    title,
-    description,
-    keywords: [
-      `menu digital ${restaurant.name}`,
-      `carta digital ${restaurant.name}`,
-      `pedidos online ${restaurant.name}`,
-      `carta qr ${restaurant.name}`,
-      'menu digital para restaurantes',
-      'pedidos a domicilio sin comisiones',
-      'fast food',
-    ],
-    openGraph: {
-      title,
-      description,
-      type: 'website',
-      images: restaurant.bannerUrl || restaurant.logoUrl ? [{ url: restaurant.bannerUrl || restaurant.logoUrl! }] : undefined,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: restaurant.bannerUrl || restaurant.logoUrl ? [restaurant.bannerUrl || restaurant.logoUrl!] : undefined,
-    },
-    icons: restaurant.logoUrl ? { icon: restaurant.logoUrl, shortcut: restaurant.logoUrl, apple: restaurant.logoUrl } : undefined,
-  };
-}
-
-function getRootRedirectUrl(): string {
-  const reqHeaders = headers();
-  const host = reqHeaders.get('host') || 'localhost:3000';
-  const protocol = host.includes('localhost') ? 'http:' : 'https:';
-
-  if (host.includes('.localhost')) {
-    const port = host.split(':')[1] ? `:${host.split(':')[1]}` : '';
-    return `${protocol}//localhost${port}/`;
-  }
-
-  if (host.includes('.lvh.me')) {
-    const port = host.split(':')[1] ? `:${host.split(':')[1]}` : '';
-    return `${protocol}//lvh.me${port}/`;
-  }
-
-  const hostWithoutPort = host.split(':')[0];
-  const port = host.split(':')[1] ? `:${host.split(':')[1]}` : '';
-  const parts = hostWithoutPort.split('.');
-  if (parts.length > 2) {
-    return `${protocol}//${parts.slice(1).join('.')}${port}/`;
-  }
-
-  return `${protocol}//${host}/`;
-}
-
-export default async function TenantCatalogPage({ params }: { params: { slug: string } }) {
-  const slug = params.slug?.toLowerCase().trim();
-
-  const restaurant = await prisma.restaurant.findUnique({
+const getRestaurantBySlug = cache(async (slug: string) => {
+  if (!slug) return null;
+  return prisma.restaurant.findUnique({
     where: { slug },
     include: {
       categories: {
@@ -104,16 +36,67 @@ export default async function TenantCatalogPage({ params }: { params: { slug: st
       },
     },
   });
+});
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const slug = params.slug?.toLowerCase().trim();
+  const restaurant = await getRestaurantBySlug(slug);
+
+  if (!restaurant) {
+    return { title: 'Restaurante no encontrado | Menú Digital' };
+  }
+
+  const title = `${restaurant.name} | Menú Digital y Pedidos Online`;
+  const description = `Consulta el menú digital de ${restaurant.name} y pide online. Personaliza tus ingredientes y envía tu pedido directo por WhatsApp sin comisiones.`;
+  const canonicalUrl = `${BASE_URL}/${slug}`;
+  const ogImageUrl = restaurant.bannerUrl || restaurant.logoUrl || `${BASE_URL}/opengraph-image`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    keywords: [
+      `menu digital ${restaurant.name}`,
+      `carta digital ${restaurant.name}`,
+      `pedidos online ${restaurant.name}`,
+      `carta qr ${restaurant.name}`,
+      'menu digital para restaurantes',
+      'pedidos a domicilio sin comisiones',
+      'fast food',
+    ],
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: 'website',
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: restaurant.name }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogImageUrl],
+    },
+    icons: restaurant.logoUrl ? { icon: restaurant.logoUrl, shortcut: restaurant.logoUrl, apple: restaurant.logoUrl } : undefined,
+  };
+}
+
+export default async function TenantCatalogPage({ params }: { params: { slug: string } }) {
+  const slug = params.slug?.toLowerCase().trim();
+
+  const restaurant = await getRestaurantBySlug(slug);
 
   if (!restaurant || !restaurant.isActive) {
-    redirect(getRootRedirectUrl());
+    redirect('/');
   }
 
   const restaurantJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
     name: restaurant.name,
-    image: restaurant.bannerUrl || restaurant.logoUrl || undefined,
+    image: restaurant.bannerUrl || restaurant.logoUrl || `${BASE_URL}/opengraph-image`,
     telephone: restaurant.phone,
     address: restaurant.address
       ? {

@@ -17,10 +17,10 @@ export const BASE_URL = (
 
 export const SEO_CONFIG = {
   siteName: 'FastFood SaaS - Menús Digitales para Restaurantes',
-  defaultTitle: 'SaaS para Abrir Menús Digitales para Restaurantes | Carta QR & Pedidos',
-  titleTemplate: '%s | FastFood SaaS - Menús Digitales',
+  defaultTitle: 'Menús Digitales y Carta QR para Restaurantes | FastFood SaaS',
+  titleTemplate: '%s | FastFood SaaS',
   defaultDescription:
-    'Plataforma SaaS líder para abrir menús digitales interactivos con código QR, pedidos online a WhatsApp y monitor KDS para restaurantes, bares y locales de comida rápida. Vende directo y sin comisiones.',
+    'Plataforma SaaS para crear menús digitales con código QR, recibir pedidos online por WhatsApp sin comisiones y gestionar cocina con monitor KDS en vivo.',
   keywords: [
     'saas para abrir menus digitales para restaurantes',
     'abrir menu digital para restaurante',
